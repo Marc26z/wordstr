@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuthor } from '@/hooks/useAuthor';
 import { genUserName } from '@/lib/genUserName';
-import { ArrowLeft, BookOpen, Download, ExternalLink, FileText, Calendar, Globe } from 'lucide-react';
+import { ArrowLeft, BookOpen, ExternalLink, FileText, Calendar, Globe } from 'lucide-react';
+import { DownloadButton } from '@/components/DownloadButton';
 import { formatFileSize } from '@/lib/pressstr';
 
 function getTag(event: NostrEvent, name: string): string | undefined {
@@ -130,12 +131,11 @@ export function EbookView({ event }: EbookViewProps) {
             {/* Download / Open */}
             {fileUrl && (
               <div className="flex flex-wrap gap-3">
-                <a href={fileUrl} target="_blank" rel="noopener noreferrer" download>
-                  <Button>
-                    <Download className="w-4 h-4 mr-2" />
-                    Download {format}
-                  </Button>
-                </a>
+                <DownloadButton
+                  url={fileUrl}
+                  filename={`${title}.${isEpub ? 'epub' : 'pdf'}`}
+                  label={`Download ${format}`}
+                />
                 <a href={fileUrl} target="_blank" rel="noopener noreferrer">
                   <Button variant="outline">
                     <ExternalLink className="w-4 h-4 mr-2" />

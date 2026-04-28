@@ -7,7 +7,8 @@ import { useAuthor } from '@/hooks/useAuthor';
 import { useNostr } from '@nostrify/react';
 import { useQuery } from '@tanstack/react-query';
 import { genUserName } from '@/lib/genUserName';
-import { ArrowLeft, Download, ExternalLink, FileText, Newspaper, Calendar } from 'lucide-react';
+import { ArrowLeft, ExternalLink, FileText, Newspaper, Calendar } from 'lucide-react';
+import { DownloadButton } from '@/components/DownloadButton';
 import { KIND_MAGAZINE, formatFileSize } from '@/lib/pressstr';
 
 function getTag(event: NostrEvent, name: string): string | undefined {
@@ -158,12 +159,11 @@ export function IssueView({ event }: IssueViewProps) {
             {/* Download / Open */}
             {fileUrl && (
               <div className="flex flex-wrap gap-3">
-                <a href={fileUrl} target="_blank" rel="noopener noreferrer" download>
-                  <Button>
-                    <Download className="w-4 h-4 mr-2" />
-                    Download {format}
-                  </Button>
-                </a>
+                <DownloadButton
+                  url={fileUrl}
+                  filename={`${title}.${isEpub ? 'epub' : 'pdf'}`}
+                  label={`Download ${format}`}
+                />
                 <a href={fileUrl} target="_blank" rel="noopener noreferrer">
                   <Button variant="outline">
                     <ExternalLink className="w-4 h-4 mr-2" />
