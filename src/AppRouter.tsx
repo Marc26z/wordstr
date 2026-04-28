@@ -3,6 +3,10 @@ import { ScrollToTop } from "./components/ScrollToTop";
 
 import Index from "./pages/Index";
 import { NIP19Page } from "./pages/NIP19Page";
+import { PublishPage } from "./pages/publish/PublishPage";
+import { PublishMagazinePage } from "./pages/publish/PublishMagazinePage";
+import { PublishIssuePage } from "./pages/publish/PublishIssuePage";
+import { PublishEbookPage } from "./pages/publish/PublishEbookPage";
 import NotFound from "./pages/NotFound";
 
 export function AppRouter() {
@@ -11,6 +15,10 @@ export function AppRouter() {
       <ScrollToTop />
       <Routes>
         <Route path="/" element={<Index />} />
+        <Route path="/publish" element={<PublishPage />} />
+        <Route path="/publish/magazine" element={<PublishMagazinePage />} />
+        <Route path="/publish/issue" element={<PublishIssuePage />} />
+        <Route path="/publish/ebook" element={<PublishEbookPage />} />
         {/* NIP-19 route for npub1, note1, naddr1, nevent1, nprofile1 */}
         <Route path="/:nip19" element={<NIP19Page />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
