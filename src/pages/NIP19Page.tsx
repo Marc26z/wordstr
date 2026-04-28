@@ -58,7 +58,7 @@ export function NIP19Page() {
       return <div className="p-8 text-center text-muted-foreground">Event view coming soon.</div>;
 
     case 'naddr':
-      return <NaddrView data={decoded.data} />;
+      return <NaddrView data={decoded.data} naddr={identifier} />;
 
     default:
       return <NotFound />;
@@ -72,7 +72,7 @@ interface NaddrData {
   relays?: string[];
 }
 
-function NaddrView({ data }: { data: NaddrData }) {
+function NaddrView({ data, naddr }: { data: NaddrData; naddr: string }) {
   const { nostr } = useNostr();
 
   const { data: event, isLoading, isError } = useQuery<NostrEvent | undefined>({
@@ -96,11 +96,11 @@ function NaddrView({ data }: { data: NaddrData }) {
 
   switch (data.kind) {
     case KIND_MAGAZINE:
-      return <MagazineView event={event} />;
+      return <MagazineView event={event} naddr={naddr} />;
     case KIND_MAGAZINE_ISSUE:
-      return <IssueView event={event} />;
+      return <IssueView event={event} naddr={naddr} />;
     case KIND_EBOOK:
-      return <EbookView event={event} />;
+      return <EbookView event={event} naddr={naddr} />;
     default:
       return (
         <div className="p-8 text-center text-muted-foreground">

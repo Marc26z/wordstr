@@ -3,10 +3,20 @@ import type { NostrEvent } from '@nostrify/nostrify';
 import { nip19 } from 'nostr-tools';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useAuthor } from '@/hooks/useAuthor';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { genUserName } from '@/lib/genUserName';
-import { ArrowLeft, BookOpen, ExternalLink, FileText, Calendar, Globe } from 'lucide-react';
+import { ArrowLeft, BookOpen, ExternalLink, FileText, Calendar, Globe, MoreHorizontal, Pencil } from 'lucide-react';
 import { DownloadButton } from '@/components/DownloadButton';
+import { DeleteEventButton } from '@/components/DeleteEventButton';
+import { CommentsSection } from '@/components/comments/CommentsSection';
 import { formatFileSize } from '@/lib/pressstr';
 
 function getTag(event: NostrEvent, name: string): string | undefined {
@@ -15,9 +25,12 @@ function getTag(event: NostrEvent, name: string): string | undefined {
 
 interface EbookViewProps {
   event: NostrEvent;
+  /** The naddr string used in the current URL, needed to build the edit link */
+  naddr: string;
 }
 
-export function EbookView({ event }: EbookViewProps) {
+export function EbookView({ event, naddr }: EbookViewProps) {
+  const { user } = useCurrentUser();
   const author = useAuthor(event.pubkey);
 
   const title = getTag(event, 'title') ?? 'Untitled Ebook';
@@ -37,11 +50,11 @@ export function EbookView({ event }: EbookViewProps) {
   const authorNpub = nip19.npubEncode(event.pubkey);
   const isEpub = mimeType.includes('epub');
   const format = isEpub ? 'EPUB' : 'PDF';
+  const isOwner = user?.pubkey === event.pubkey;
 
   const publishedDate = publishedAt
     ? new Date(Number(publishedAt) * 1000).toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'long',
+        year: 'numeric', month: 'long',
       })
     : null;
 
@@ -57,6 +70,35 @@ export function EbookView({ event }: EbookViewProps) {
           </Link>
           <BookOpen className="w-4 h-4 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">Ebook</span>
+          <div className="flex-1" />
+          {isOwner && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" aria-label="Ebook options">
+                  <MoreHorizontal className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link to={`/edit/ebook/${naddr}`} className="flex items-center gap-2">
+                    <Pencil className="w-4 h-4" />
+                    Edit ebook
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="p-0"
+                  onSelect={(e) => e.preventDefault()}
+                >
+                  <DeleteEventButton
+                    event={event}
+                    redirectTo="/"
+                    label="Delete ebook"
+                  />
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
 
@@ -128,7 +170,6 @@ export function EbookView({ event }: EbookViewProps) {
               <p className="text-muted-foreground mb-4 text-sm leading-relaxed">{summary}</p>
             )}
 
-            {/* Download / Open */}
             {fileUrl && (
               <div className="flex flex-wrap gap-3">
                 <DownloadButton
@@ -147,12 +188,21 @@ export function EbookView({ event }: EbookViewProps) {
           </div>
         </div>
 
-        {/* Content / description */}
         {content && (
           <div className="mt-10 prose prose-sm dark:prose-invert max-w-none text-muted-foreground whitespace-pre-wrap border-t pt-8">
             {content}
           </div>
         )}
+
+        {/* Comments */}
+        <div className="mt-12 border-t pt-8">
+          <h2 className="text-xl font-semibold mb-6">Comments</h2>
+          <CommentsSection
+            root={event}
+            emptyStateMessage="No comments yet"
+            emptyStateSubtitle="Be the first to comment on this ebook."
+          />
+        </div>
       </div>
     </div>
   );

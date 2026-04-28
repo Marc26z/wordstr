@@ -3,12 +3,22 @@ import type { NostrEvent } from '@nostrify/nostrify';
 import { nip19 } from 'nostr-tools';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useAuthor } from '@/hooks/useAuthor';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useNostr } from '@nostrify/react';
 import { useQuery } from '@tanstack/react-query';
 import { genUserName } from '@/lib/genUserName';
-import { ArrowLeft, ExternalLink, FileText, Newspaper, Calendar } from 'lucide-react';
+import { ArrowLeft, ExternalLink, FileText, Newspaper, Calendar, MoreHorizontal, Pencil } from 'lucide-react';
 import { DownloadButton } from '@/components/DownloadButton';
+import { DeleteEventButton } from '@/components/DeleteEventButton';
+import { CommentsSection } from '@/components/comments/CommentsSection';
 import { KIND_MAGAZINE, formatFileSize } from '@/lib/pressstr';
 
 function getTag(event: NostrEvent, name: string): string | undefined {
@@ -17,10 +27,13 @@ function getTag(event: NostrEvent, name: string): string | undefined {
 
 interface IssueViewProps {
   event: NostrEvent;
+  /** The naddr string used in the current URL, needed to build the edit link */
+  naddr: string;
 }
 
-export function IssueView({ event }: IssueViewProps) {
+export function IssueView({ event, naddr }: IssueViewProps) {
   const { nostr } = useNostr();
+  const { user } = useCurrentUser();
   const author = useAuthor(event.pubkey);
 
   const title = getTag(event, 'title') ?? 'Untitled Issue';
@@ -35,12 +48,10 @@ export function IssueView({ event }: IssueViewProps) {
   const topics = event.tags.filter(([n]) => n === 't').map(([, v]) => v);
   const magCoord = getTag(event, 'a') ?? '';
 
-  // Parse parent magazine coord
   const magCoordParts = magCoord.split(':');
-  const magPubkey = magCoordParts[1];
-  const magD = magCoordParts[2];
+  const magPubkey = magCoordParts[1] ?? '';
+  const magD = magCoordParts[2] ?? '';
 
-  // Fetch parent magazine event
   const { data: magazineEvent } = useQuery<NostrEvent | undefined>({
     queryKey: ['pressstr', 'magazine', magPubkey, magD],
     enabled: Boolean(magPubkey && magD),
@@ -54,9 +65,7 @@ export function IssueView({ event }: IssueViewProps) {
     },
   });
 
-  const magazineTitle = magazineEvent
-    ? (magazineEvent.tags.find(([n]) => n === 'title')?.[1] ?? 'Magazine')
-    : 'Magazine';
+  const magazineTitle = magazineEvent?.tags.find(([n]) => n === 'title')?.[1] ?? 'Magazine';
   const magazineNaddr = magazineEvent
     ? nip19.naddrEncode({ kind: KIND_MAGAZINE, pubkey: magPubkey, identifier: magD })
     : null;
@@ -65,38 +74,60 @@ export function IssueView({ event }: IssueViewProps) {
   const authorNpub = nip19.npubEncode(event.pubkey);
   const isEpub = mimeType.includes('epub');
   const format = isEpub ? 'EPUB' : 'PDF';
+  const isOwner = user?.pubkey === event.pubkey;
 
   const publishedDate = publishedAt
     ? new Date(Number(publishedAt) * 1000).toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
+        year: 'numeric', month: 'long', day: 'numeric',
       })
     : null;
+
+  const backTo = magazineNaddr ? `/${magazineNaddr}` : '/';
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center gap-3">
-          {magazineNaddr ? (
-            <Link to={`/${magazineNaddr}`}>
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-            </Link>
-          ) : (
-            <Link to="/">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-            </Link>
-          )}
+          <Link to={backTo}>
+            <Button variant="ghost" size="sm">
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+          </Link>
           {magazineNaddr && (
-            <Link to={`/${magazineNaddr}`} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <Link to={backTo} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
               <Newspaper className="w-4 h-4" />
               <span>{magazineTitle}</span>
             </Link>
+          )}
+          <div className="flex-1" />
+          {isOwner && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" aria-label="Issue options">
+                  <MoreHorizontal className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link to={`/edit/issue/${naddr}`} className="flex items-center gap-2">
+                    <Pencil className="w-4 h-4" />
+                    Edit issue
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="p-0"
+                  onSelect={(e) => e.preventDefault()}
+                >
+                  <DeleteEventButton
+                    event={event}
+                    redirectTo={magazineNaddr ? `/${magazineNaddr}` : '/'}
+                    label="Delete issue"
+                  />
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
       </div>
@@ -120,9 +151,7 @@ export function IssueView({ event }: IssueViewProps) {
 
           {/* Metadata */}
           <div className="flex-1 min-w-0">
-            {issue && (
-              <p className="text-sm font-medium text-primary mb-1">{issue}</p>
-            )}
+            {issue && <p className="text-sm font-medium text-primary mb-1">{issue}</p>}
             <h1 className="text-2xl md:text-3xl font-bold mb-3">{title}</h1>
 
             <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-4">
@@ -152,11 +181,8 @@ export function IssueView({ event }: IssueViewProps) {
               </div>
             )}
 
-            {summary && (
-              <p className="text-muted-foreground mb-4">{summary}</p>
-            )}
+            {summary && <p className="text-muted-foreground mb-4">{summary}</p>}
 
-            {/* Download / Open */}
             {fileUrl && (
               <div className="flex flex-wrap gap-3">
                 <DownloadButton
@@ -175,12 +201,21 @@ export function IssueView({ event }: IssueViewProps) {
           </div>
         </div>
 
-        {/* Content / editorial notes */}
         {content && (
           <div className="mt-10 prose prose-sm dark:prose-invert max-w-none text-muted-foreground whitespace-pre-wrap border-t pt-8">
             {content}
           </div>
         )}
+
+        {/* Comments */}
+        <div className="mt-12 border-t pt-8">
+          <h2 className="text-xl font-semibold mb-6">Comments</h2>
+          <CommentsSection
+            root={event}
+            emptyStateMessage="No comments yet"
+            emptyStateSubtitle="Be the first to comment on this issue."
+          />
+        </div>
       </div>
     </div>
   );

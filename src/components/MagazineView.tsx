@@ -4,11 +4,19 @@ import { nip19 } from 'nostr-tools';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { IssueCard } from '@/components/PublicationCard';
+import { DeleteEventButton } from '@/components/DeleteEventButton';
 import { useAuthor } from '@/hooks/useAuthor';
 import { useMagazineIssues } from '@/hooks/useMagazines';
 import { genUserName } from '@/lib/genUserName';
-import { ArrowLeft, Globe, Newspaper, Plus, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Globe, Newspaper, Plus, ExternalLink, MoreHorizontal, Pencil } from 'lucide-react';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { KIND_MAGAZINE } from '@/lib/pressstr';
 
@@ -18,9 +26,10 @@ function getTag(event: NostrEvent, name: string): string | undefined {
 
 interface MagazineViewProps {
   event: NostrEvent;
+  naddr: string;
 }
 
-export function MagazineView({ event }: MagazineViewProps) {
+export function MagazineView({ event, naddr }: MagazineViewProps) {
   const { user } = useCurrentUser();
   const author = useAuthor(event.pubkey);
   const dTag = getTag(event, 'd') ?? '';
@@ -38,7 +47,6 @@ export function MagazineView({ event }: MagazineViewProps) {
   const authorNpub = nip19.npubEncode(event.pubkey);
 
   const isOwner = user?.pubkey === event.pubkey;
-
   const issuePublishUrl = `/publish/issue?magazine=${encodeURIComponent(coord)}`;
 
   return (
@@ -53,6 +61,28 @@ export function MagazineView({ event }: MagazineViewProps) {
           </Link>
           <Newspaper className="w-5 h-5 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">Magazine</span>
+          <div className="flex-1" />
+          {isOwner && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" aria-label="Magazine options">
+                  <MoreHorizontal className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link to={`/edit/magazine/${naddr}`} className="flex items-center">
+                    <Pencil className="w-4 h-4 mr-2" />
+                    Edit magazine
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <DeleteEventButton event={event} redirectTo="/" label="Delete magazine" />
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
 
@@ -92,7 +122,13 @@ export function MagazineView({ event }: MagazineViewProps) {
             )}
           </div>
           {isOwner && (
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 flex gap-2">
+              <Link to={`/edit/magazine/${naddr}`}>
+                <Button size="sm" variant="outline">
+                  <Pencil className="w-4 h-4 mr-1.5" />
+                  Edit
+                </Button>
+              </Link>
               <Link to={issuePublishUrl}>
                 <Button size="sm">
                   <Plus className="w-4 h-4 mr-1.5" />
