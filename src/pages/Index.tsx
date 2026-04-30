@@ -14,7 +14,19 @@ const Index = () => {
   useSeoMeta({
     title: 'PressStr — Magazines & Ebooks on Nostr',
     description:
-      'Discover and publish magazines, issues, and ebooks on the decentralized Nostr network.',
+      'Publish and discover magazines, periodicals, and ebooks on the open Nostr network. No paywalls. No algorithms. Your content, forever.',
+    ogType: 'website',
+    ogSiteName: 'PressStr',
+    ogTitle: 'PressStr — Magazines & Ebooks on Nostr',
+    ogDescription:
+      'Publish and discover magazines, periodicals, and ebooks on the open Nostr network. No paywalls. No algorithms. Your content, forever.',
+    ogImage: 'https://blossom.primal.net/7a4177f088e9d9a004611a2d9a68c8d926ed4374e8afd560e9fa273e859aecdb.jpg',
+    ogUrl: 'https://pressstr.shakespeare.wtf',
+    twitterCard: 'summary_large_image',
+    twitterTitle: 'PressStr — Magazines & Ebooks on Nostr',
+    twitterDescription:
+      'Publish and discover magazines, periodicals, and ebooks on the open Nostr network. No paywalls. No algorithms. Your content, forever.',
+    twitterImage: 'https://blossom.primal.net/7a4177f088e9d9a004611a2d9a68c8d926ed4374e8afd560e9fa273e859aecdb.jpg',
   });
 
   const { user } = useCurrentUser();
