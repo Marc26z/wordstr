@@ -1,12 +1,12 @@
 /**
  * useBlossomUpload
  *
- * Custom Blossom upload implementation that:
- * - Tries multiple servers sequentially, not with Promise.any(), so we always
- *   get a meaningful error message instead of AggregateError("All promises rejected")
- * - Signs the BUD-02 auth event (kind 24242) ourselves for full control
- * - Returns the public URL, NIP-94 tags, and sha256
- * - Works on all devices including iOS Safari / Android Chrome
+ * Custom Blossom BUD-02 upload that:
+ * - Tries servers sequentially (not Promise.any) so we always get a real error message
+ * - Signs a fresh kind-24242 auth event per upload call (never reuses stale auth)
+ * - Sniffs MIME type from file extension when file.type is empty (common on mobile)
+ * - Uses standard base64 (not base64url) for the Authorization header value
+ * - Works on all devices including iOS Safari and Android Chrome
  */
 import { useMutation } from '@tanstack/react-query';
 import { useCurrentUser } from './useCurrentUser';
@@ -32,12 +32,27 @@ async function sha256Hex(buffer: ArrayBuffer): Promise<string> {
     .join('');
 }
 
-function base64url(bytes: Uint8Array): string {
-  let binary = '';
-  for (let i = 0; i < bytes.length; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+/** Standard base64 encode — servers expect this, not base64url */
+function toBase64(str: string): string {
+  return btoa(str);
+}
+
+/** Sniff a MIME type from the file extension when file.type is empty */
+function sniffMime(file: File): string {
+  if (file.type) return file.type;
+  const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+  const map: Record<string, string> = {
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    png: 'image/png',
+    gif: 'image/gif',
+    webp: 'image/webp',
+    svg: 'image/svg+xml',
+    avif: 'image/avif',
+    pdf: 'application/pdf',
+    epub: 'application/epub+zip',
+  };
+  return map[ext] ?? 'application/octet-stream';
 }
 
 export function useBlossomUpload() {
@@ -47,12 +62,17 @@ export function useBlossomUpload() {
     mutationFn: async (file: File): Promise<BlossomUploadResult> => {
       if (!user) throw new Error('You must be logged in to upload files.');
 
-      // 1. Compute sha256 of the file
+      const mimeType = sniffMime(file);
+
+      // 1. Compute sha256 of the raw bytes
       const arrayBuffer = await file.arrayBuffer();
       const x = await sha256Hex(arrayBuffer);
-      const now = Math.floor(Date.now() / 1000);
 
-      // 2. Sign a BUD-02 auth event (kind 24242)
+      // 2. Sign a fresh BUD-02 auth event (kind 24242) for this exact file
+      //    Expiration is 5 minutes — plenty of time for the upload, not stale from a prior call
+      const now = Math.floor(Date.now() / 1000);
+      const expiration = now + 300;
+
       const authEvent = await user.signer.signEvent({
         kind: 24242,
         content: `Upload ${file.name || 'file'}`,
@@ -61,34 +81,43 @@ export function useBlossomUpload() {
           ['t', 'upload'],
           ['x', x],
           ['size', String(file.size)],
-          ['expiration', String(now + 60)],
+          ['expiration', String(expiration)],
         ],
       });
 
-      // 3. Encode auth event as base64url for the Authorization header
+      // 3. Build the Authorization header value
+      //    Standard base64 of the JSON-stringified signed event
       const authJson = JSON.stringify(authEvent);
+      // btoa only handles Latin-1; encode to UTF-8 bytes first
       const authBytes = new TextEncoder().encode(authJson);
-      const authorization = `Nostr ${base64url(authBytes)}`;
+      let binary = '';
+      for (let i = 0; i < authBytes.length; i++) {
+        binary += String.fromCharCode(authBytes[i]);
+      }
+      const authorization = `Nostr ${toBase64(binary)}`;
 
-      // 4. Try each server in sequence; return on first success
+      // 4. Try each server in sequence; stop at the first success
       const errors: string[] = [];
 
       for (const server of BLOSSOM_SERVERS) {
         try {
-          const uploadUrl = `${server}/upload`;
-          const response = await fetch(uploadUrl, {
+          const response = await fetch(`${server}/upload`, {
             method: 'PUT',
             body: file,
             headers: {
               'Authorization': authorization,
-              'Content-Type': file.type || 'application/octet-stream',
+              // Always provide Content-Type; some servers require it and mobile
+              // browsers sometimes leave file.type empty for non-standard types
+              'Content-Type': mimeType,
+              // Content-Length avoids "411 Length Required" on strict servers
+              'Content-Length': String(file.size),
             },
           });
 
           const text = await response.text();
 
           if (!response.ok) {
-            errors.push(`${server}: ${response.status} ${text.slice(0, 120)}`);
+            errors.push(`${server}: HTTP ${response.status} — ${text.slice(0, 160)}`);
             continue;
           }
 
@@ -96,36 +125,40 @@ export function useBlossomUpload() {
           try {
             json = JSON.parse(text) as Record<string, unknown>;
           } catch {
-            errors.push(`${server}: non-JSON response`);
+            errors.push(`${server}: server returned non-JSON: ${text.slice(0, 80)}`);
             continue;
           }
 
           const blobUrl = json.url as string | undefined;
-          const sha256 = (json.sha256 as string | undefined) ?? x;
-          const size = (json.size as number | undefined) ?? file.size;
-          const type = (json.type as string | undefined) ?? file.type;
-
           if (!blobUrl) {
-            errors.push(`${server}: no URL in response`);
+            errors.push(`${server}: response has no "url" field`);
             continue;
           }
+
+          const sha256 = (json.sha256 as string | undefined) ?? x;
+          const size = (json.size as number | undefined) ?? file.size;
+          const type = (json.type as string | undefined) ?? mimeType;
 
           const tags: string[][] = [
             ['url', blobUrl],
             ['x', sha256],
             ['ox', sha256],
             ['size', String(size)],
+            ['m', type],
           ];
-          if (type) tags.push(['m', type]);
 
           return { url: blobUrl, tags, sha256 };
         } catch (err) {
-          errors.push(`${server}: ${err instanceof Error ? err.message : String(err)}`);
+          // fetch() itself threw — typically a CORS or network error
+          const msg = err instanceof Error ? err.message : String(err);
+          errors.push(`${server}: ${msg}`);
         }
       }
 
-      // All servers failed — report the first concrete error
-      throw new Error(errors[0] ?? 'All Blossom servers failed. Check your connection.');
+      // All servers failed — surface the first concrete error
+      throw new Error(
+        errors[0] ?? 'All Blossom servers failed. Check your internet connection.',
+      );
     },
   });
 }
