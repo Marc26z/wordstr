@@ -9,6 +9,7 @@ import { MagazineCard, EbookCard } from '@/components/PublicationCard';
 import { useMagazines, useEbooks } from '@/hooks/useMagazines';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { BookOpen, Newspaper, Plus, PenLine } from 'lucide-react';
+import { APP_VERSION } from '@/lib/version';
 
 const Index = () => {
   useSeoMeta({
@@ -184,6 +185,10 @@ const Index = () => {
           <a href="https://nostr.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
             Nostr
           </a>
+          {' · '}
+          <Link to="/changelog" className="hover:text-foreground transition-colors">
+            v{APP_VERSION}
+          </Link>
           {' · '}
           <a href="https://shakespeare.diy" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
             Vibed with Shakespeare

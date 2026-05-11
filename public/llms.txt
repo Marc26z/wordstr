@@ -1,0 +1,119 @@
+# PressStr
+
+> PressStr is a decentralised magazine and ebook publishing platform built on the Nostr protocol. Publishers upload PDF and EPUB files to Blossom content-addressed storage servers, then broadcast structured Nostr events that describe the publication. Readers can browse, download, and comment on content through any NIP-89-compatible client, or directly on the PressStr web app at https://pressstr.shakespeare.wtf.
+
+## Overview
+
+PressStr defines three new addressable Nostr event kinds (documented in `NIP.md` in the repository root):
+
+- **Kind 34609 — Magazine**: A named periodical publication. Carries a title, optional logo image, description, topics, language, and website URL. Identified by `pubkey + kind + d` tag.
+- **Kind 39731 — Magazine Issue**: A single issue of a magazine. Carries a free-form issue label (not restricted to numbers), a cover image, a PDF file URL, file size, SHA-256 hash, and a reference to the parent magazine via an `a` tag (`34609:<pubkey>:<d>`).
+- **Kind 33953 — Ebook**: A standalone ebook in PDF or EPUB format. Carries a title, cover image, file URL, authors, ISBN, language, topics, and file integrity data.
+
+All three kinds are **addressable events** (kind range 30000–39999). Editing re-publishes with the same `d` tag, replacing the event in-place on relays. Deletion sends a NIP-09 kind-5 request.
+
+## Technology Stack
+
+- **React 19** with TypeScript, TailwindCSS 4, Vite
+- **Nostrify** (`@nostrify/react`, `@nostrify/nostrify`) for Nostr protocol integration
+- **TanStack Query** for data fetching and caching
+- **React Router v7** for client-side routing
+- **shadcn/ui** on Radix UI primitives for accessible UI components
+- **react-hook-form** for all publish/edit forms
+- **PDF.js** (loaded from CDN as a blob: URL to satisfy CSP) for first-page cover extraction
+- **date-fns** for relative timestamps in the comments system
+
+## Key Source Files
+
+- `src/lib/pressstr.ts` — Kind constants (`KIND_MAGAZINE = 34609`, `KIND_MAGAZINE_ISSUE = 39731`, `KIND_EBOOK = 33953`), TypeScript interfaces for publication data, `extractPdfCover()` (PDF.js wrapper), `slugify()`, `sha256Hex()`, `formatFileSize()`.
+- `src/lib/version.ts` — Single source of truth for the app version string (`APP_VERSION`).
+- `src/hooks/useBlossomUpload.ts` — Custom BUD-02 Blossom upload hook. Tries servers sequentially (primal.net → satellite.earth → nostrcheck.me → blossom.band), signs a fresh kind-24242 auth event per upload, sniffs MIME type from file extension when `file.type` is empty (mobile Safari compatibility).
+- `src/hooks/useMagazines.ts` — TanStack Query hooks: `useMagazines`, `useMagazine`, `useMagazineIssues`, `useMagazineIssue`, `useEbooks`, `useEbook`, `useMyMagazines`.
+- `src/hooks/usePublishMagazine.ts` — `publishMagazine`, `publishMagazineIssue`, `publishEbook` — builds the correct tag arrays and calls `useNostrPublish`.
+- `src/hooks/useComments.ts` / `src/hooks/usePostComment.ts` — NIP-22 (kind 1111) comment fetching and posting.
+- `src/components/CoverImagePicker.tsx` — Image upload widget with drag-and-drop, preview, and remove button.
+- `src/components/PublicationFilePicker.tsx` — PDF/EPUB upload widget with three-phase progress (extracting cover → uploading cover → uploading file) and auto cover extraction.
+- `src/components/DownloadButton.tsx` — Forces a real browser download (fetch → Blob → object URL) for cross-origin Blossom files, since the HTML `download` attribute is ignored for cross-origin URLs.
+- `src/components/DeleteEventButton.tsx` — NIP-09 deletion with AlertDialog confirmation.
+- `src/components/MagazineView.tsx` — Magazine detail page (logo, description, issue grid, owner edit/delete menu).
+- `src/components/IssueView.tsx` — Issue detail page (cover, metadata, download, NIP-22 comments section).
+- `src/components/EbookView.tsx` — Ebook detail page (cover, metadata, download, NIP-22 comments section).
+- `src/components/comments/CommentsSection.tsx` — NIP-22 threaded comment renderer.
+- `src/pages/Index.tsx` — Home page with Magazines/Ebooks tabs.
+- `src/pages/ChangelogPage.tsx` — Full release history at `/changelog`.
+- `src/pages/NIP19Page.tsx` — NIP-19 router: decodes naddr identifiers and renders the correct view.
+- `src/pages/publish/` — Publish forms: `PublishPage`, `PublishMagazinePage`, `PublishIssuePage`, `PublishEbookPage`.
+- `src/pages/edit/` — Edit forms: `EditMagazinePage`, `EditIssuePage`, `EditEbookPage`.
+- `src/AppRouter.tsx` — All routes.
+- `NIP.md` — Full specification of the three custom Nostr event kinds.
+- `public/llms.txt` — This file.
+
+## Routes
+
+| Path | Description |
+|---|---|
+| `/` | Home — browse all magazines and ebooks |
+| `/changelog` | Full release history |
+| `/publish` | Publish hub |
+| `/publish/magazine` | Create a new magazine |
+| `/publish/issue` | Publish a new issue to an existing magazine |
+| `/publish/ebook` | Publish a standalone ebook |
+| `/edit/magazine/:naddr` | Edit a magazine (owner only) |
+| `/edit/issue/:naddr` | Edit a magazine issue (owner only) |
+| `/edit/ebook/:naddr` | Edit an ebook (owner only) |
+| `/:nip19` | NIP-19 universal route: renders magazine, issue, or ebook by naddr |
+
+## Nostr Event Kinds
+
+| Kind | Name | Range | Description |
+|---|---|---|---|
+| 34609 | Magazine | Addressable | Named publication, groups issues |
+| 39731 | Magazine Issue | Addressable | Single PDF issue of a magazine |
+| 33953 | Ebook | Addressable | Standalone PDF or EPUB ebook |
+| 1111 | Comment | Regular | NIP-22 threaded comment on an issue or ebook |
+| 5 | Deletion | Regular | NIP-09 deletion request |
+| 24242 | Blossom Auth | Regular | BUD-02 upload authorisation event |
+
+## Blossom File Hosting
+
+All files (PDFs, EPUBs, cover images, logos) are uploaded to Blossom servers using the BUD-02 `PUT /upload` endpoint. The upload hook (`useBlossomUpload`) signs a kind-24242 auth event with:
+
+- `t: upload`
+- `x: <sha256-hex>`
+- `size: <bytes>`
+- `expiration: <unix-timestamp + 300s>`
+
+Servers are tried sequentially; the first success is used. Error messages from the server (HTTP status + body) are surfaced directly to the user rather than being swallowed by `AggregateError`.
+
+## PDF Cover Extraction
+
+When publishing an issue or ebook from a PDF and no cover image is provided, PressStr automatically renders the first page of the PDF to a JPEG at ~600 px wide and uploads it to Blossom. This uses PDF.js loaded from `cdnjs.cloudflare.com` via a dynamically-injected `<script type="module">` pointing at a `blob:` URL (required to satisfy the CSP while avoiding bundler interception). The worker URL is set to the same CDN.
+
+## Authentication & Login
+
+Users log in with a Nostr identity. Supported signer types:
+- NIP-07 browser extension (e.g. Alby, nos2x)
+- nsec (secret key, stored in localStorage — plaintext; use with care)
+- NIP-46 remote signer (bunker://)
+
+The `LoginArea` component handles all login flows via `@nostrify/react/login`.
+
+## Security Notes
+
+- All user-supplied URLs are not currently run through a sanitizer; future work should add `sanitizeUrl()` before using them as `href` or `src`.
+- CSP in `index.html` allows `script-src 'self' https://cdnjs.cloudflare.com blob:` specifically for the PDF.js CDN loader pattern.
+- Nostr private keys stored via nsec login are in plaintext localStorage. XSS is the primary threat; `dangerouslySetInnerHTML` is never used.
+
+## Version History
+
+See `/changelog` in the app or `src/pages/ChangelogPage.tsx` in the source for the full release history.
+
+Current version: **1.1.0**
+
+## Links
+
+- App: https://pressstr.shakespeare.wtf
+- Changelog: https://pressstr.shakespeare.wtf/changelog
+- Repository: nostr://npub14rg4vrt2v374q95ezeeydu3hkdhmzglcj950mggacap4x0lv0gyq04wun7/relay.ngit.dev/pressstr
+- NIP specification: https://pressstr.shakespeare.wtf/llms.txt (this file) and `NIP.md` in the repository
+- Built with: https://shakespeare.diy

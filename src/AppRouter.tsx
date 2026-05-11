@@ -10,6 +10,7 @@ import { PublishEbookPage } from "./pages/publish/PublishEbookPage";
 import { EditMagazinePage } from "./pages/edit/EditMagazinePage";
 import { EditIssuePage } from "./pages/edit/EditIssuePage";
 import { EditEbookPage } from "./pages/edit/EditEbookPage";
+import { ChangelogPage } from "./pages/ChangelogPage";
 import NotFound from "./pages/NotFound";
 
 export function AppRouter() {
@@ -22,6 +23,7 @@ export function AppRouter() {
         <Route path="/publish/magazine" element={<PublishMagazinePage />} />
         <Route path="/publish/issue" element={<PublishIssuePage />} />
         <Route path="/publish/ebook" element={<PublishEbookPage />} />
+        <Route path="/changelog" element={<ChangelogPage />} />
         <Route path="/edit/magazine/:naddr" element={<EditMagazinePage />} />
         <Route path="/edit/issue/:naddr" element={<EditIssuePage />} />
         <Route path="/edit/ebook/:naddr" element={<EditEbookPage />} />

@@ -347,3 +347,46 @@ For font installation, color-scheme changes, light/dark theming, or the `isolate
 Use `git status` / `git diff` to review changes and `git log` to learn project conventions. If you make a mistake, `git checkout` restores files.
 
 **Always commit when you are finished.** Non-negotiable — every completed task ends with a commit. Don't wait for the user to ask.
+
+## PressStr Maintenance Rules
+
+These rules apply to every code change in this project, no exceptions.
+
+### Version number
+
+The canonical version is stored in **two places** that must always be kept in sync:
+
+1. `package.json` → `"version"` field
+2. `src/lib/version.ts` → `APP_VERSION` constant
+
+Use [semver](https://semver.org):
+- **patch** (`x.x.N`) — bug fixes, copy changes, dependency bumps with no UX impact
+- **minor** (`x.N.0`) — new features, new pages, new Nostr kinds, significant UX changes
+- **major** (`N.0.0`) — breaking protocol changes, complete redesigns
+
+Always bump the version **before** committing the change that warrants it.
+
+### Changelog
+
+Every user-visible change must be recorded in `src/pages/ChangelogPage.tsx`.
+
+The `RELEASES` array is ordered newest-first. Each entry has:
+- `version` — must match `APP_VERSION` in `src/lib/version.ts`
+- `date` — ISO 8601 (`YYYY-MM-DD`)
+- `tag` — `'feat'` | `'fix'` | `'initial'`
+- `title` — one short sentence
+- `items` — array of bullet strings, one per notable change
+
+Add a **new entry** for each version bump. Never edit past entries (they are history).
+
+### llms.txt
+
+`public/llms.txt` is the machine-readable project description following the [llmstxt.org](https://llmstxt.org) convention. Update it when:
+
+- A new page or route is added
+- A new Nostr event kind is introduced or changed
+- A significant new component or hook is added
+- The version number changes (update the "Current version" line)
+- Any architectural decision changes (auth, upload strategy, CSP, etc.)
+
+Minor bug fixes that don't change the public-facing API or feature set do **not** require an llms.txt update.
