@@ -15,6 +15,19 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: '1.1.1',
+    date: '2026-05-23',
+    tag: 'fix',
+    title: 'Expanded default relay list for better content discovery',
+    items: [
+      'Default relay pool expanded from 3 to 15 relays for significantly better reach when publishing and browsing magazines and ebooks.',
+      'Added nos.lol, relay.nostr.band, nostr.wine, relay.snort.social, purplepag.es for broad general-purpose coverage.',
+      'Added relay.nostr.hu, nostr.mom, relay.orangepill.dev, offchain.pub as long-form / article-friendly relays.',
+      'Added nostr.fmt.wiz.biz, eden.nostr.land, relay.current.fyi as well-known stable relays.',
+      'All new relays are enabled for both read and write. Users with a NIP-65 relay list will still use their own relays automatically.',
+    ],
+  },
+  {
     version: '1.1.0',
     date: '2026-05-01',
     tag: 'fix',

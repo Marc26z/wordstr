@@ -108,7 +108,7 @@ The `LoginArea` component handles all login flows via `@nostrify/react/login`.
 
 See `/changelog` in the app or `src/pages/ChangelogPage.tsx` in the source for the full release history.
 
-Current version: **1.1.0**
+Current version: **1.1.1**
 
 ## Links
 

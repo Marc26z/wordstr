@@ -34,9 +34,24 @@ const defaultConfig: AppConfig = {
   theme: "light",
   relayMetadata: {
     relays: [
-      { url: 'wss://relay.ditto.pub', read: true, write: true },
-      { url: 'wss://relay.primal.net', read: true, write: true },
+      // Major general-purpose relays
       { url: 'wss://relay.damus.io', read: true, write: true },
+      { url: 'wss://relay.primal.net', read: true, write: true },
+      { url: 'wss://relay.ditto.pub', read: true, write: true },
+      { url: 'wss://nos.lol', read: true, write: true },
+      { url: 'wss://relay.nostr.band', read: true, write: true },
+      { url: 'wss://nostr.wine', read: true, write: true },
+      { url: 'wss://relay.snort.social', read: true, write: true },
+      { url: 'wss://purplepag.es', read: true, write: true },
+      // Long-form / article-friendly relays
+      { url: 'wss://relay.nostr.hu', read: true, write: true },
+      { url: 'wss://nostr.mom', read: true, write: true },
+      { url: 'wss://relay.orangepill.dev', read: true, write: true },
+      { url: 'wss://offchain.pub', read: true, write: true },
+      // Well-known stable relays
+      { url: 'wss://nostr.fmt.wiz.biz', read: true, write: true },
+      { url: 'wss://eden.nostr.land', read: true, write: true },
+      { url: 'wss://relay.current.fyi', read: true, write: true },
     ],
     updatedAt: 0,
   },
