@@ -15,6 +15,16 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: '1.1.2',
+    date: '2026-05-23',
+    tag: 'fix',
+    title: 'Removed relay.nostr.band and purplepag.es from default relay list',
+    items: [
+      'Removed wss://relay.nostr.band and wss://purplepag.es from the default relay pool.',
+      'Default relay pool is now 13 relays.',
+    ],
+  },
+  {
     version: '1.1.1',
     date: '2026-05-23',
     tag: 'fix',
