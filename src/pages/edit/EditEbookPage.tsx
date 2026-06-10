@@ -98,6 +98,13 @@ export function EditEbookPage() {
   const effectiveMime = fileResult?.mimeType ?? (event ? getTag(event, 'm') : 'application/pdf');
   const effectiveSize = fileResult?.fileSize ?? (event ? Number(getTag(event, 'size')) || undefined : undefined);
   const effectiveHash = fileResult?.fileHash ?? (event ? getTag(event, 'x') || undefined : undefined);
+  // Mirror URLs: from new upload if available, otherwise from existing event tags
+  const effectiveMirrorUrls = fileResult?.mirrorUrls ?? (event
+    ? event.tags.filter(([n]) => n === 'url').map(([, v]) => v)
+    : undefined);
+  const effectiveBlossomUri = fileResult?.blossomUri ?? (event
+    ? event.tags.find(([n]) => n === 'blossom')?.[1]
+    : undefined);
 
   const onSubmit = async (values: FormValues) => {
     if (!user || !event) return;
@@ -124,6 +131,8 @@ export function EditEbookPage() {
         publishedAt: values.publishedAt ? Math.floor(new Date(values.publishedAt).getTime() / 1000) : undefined,
         fileSize: effectiveSize,
         fileHash: effectiveHash,
+        blossomUri: effectiveBlossomUri,
+        mirrorUrls: effectiveMirrorUrls,
         topics: values.topics.split(',').map((t) => t.trim()).filter(Boolean),
         language: values.language.trim() || undefined,
         isbn: values.isbn.trim() || undefined,

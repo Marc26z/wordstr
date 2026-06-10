@@ -12,6 +12,10 @@ export interface FileUploadResult {
   mimeType: string;
   fileSize: number;
   fileHash: string;
+  /** BUD-10 blossom: URI with xs= mirror hints, as= author, sz= size */
+  blossomUri?: string;
+  /** All mirror URLs where the file was successfully stored */
+  mirrorUrls?: string[];
   /** If this was a PDF and no cover was provided, this is the extracted cover URL */
   extractedCoverUrl?: string;
 }
@@ -124,6 +128,8 @@ export function PublicationFilePicker({
         mimeType,
         fileSize: file.size,
         fileHash,
+        blossomUri: result.blossomUri,
+        mirrorUrls: result.mirrorUrls,
         extractedCoverUrl,
       });
     } catch (err) {

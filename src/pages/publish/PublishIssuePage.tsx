@@ -79,6 +79,8 @@ export function PublishIssuePage() {
         mimeType: fileResult.mimeType,
         fileSize: fileResult.fileSize || undefined,
         fileHash: fileResult.fileHash || undefined,
+        blossomUri: fileResult.blossomUri,
+        mirrorUrls: fileResult.mirrorUrls,
         summary: values.summary.trim() || undefined,
         publishedAt: values.publishedAt ? Math.floor(new Date(values.publishedAt).getTime() / 1000) : undefined,
         topics: values.topics.split(',').map((t) => t.trim()).filter(Boolean),

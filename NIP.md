@@ -190,11 +190,75 @@ And they can query all ebooks by a topic with:
 
 ## File Hosting
 
-All files (PDFs, EPUBs, cover images, logos) SHOULD be uploaded to [Blossom](https://github.com/hzrd149/blossom) servers and referenced by their canonical Blossom URL. The `x` tag (SHA-256) SHOULD be provided for integrity verification.
+All files (PDFs, EPUBs, cover images, logos) SHOULD be uploaded to [Blossom](https://github.com/hzrd149/blossom) servers (via BUD-02 `PUT /upload`) and referenced by their canonical Blossom URL. The `x` tag (SHA-256) SHOULD be provided for integrity verification.
 
 Cover images SHOULD be in `image/webp` or `image/jpeg` format, at a 2:3 aspect ratio (portrait), at least 400px wide.
 
 If no cover image is provided by the publisher, clients SHOULD render the first page of the PDF as a cover image and upload it to Blossom before publishing the issue/ebook event.
+
+### Multi-Server Mirroring
+
+To improve resilience, files SHOULD be uploaded to **multiple** Blossom servers simultaneously. When a file has been mirrored, events SHOULD include:
+
+- One `url` tag per mirror, in addition to the primary `url` tag. Clients display / download from the first `url` that responds.
+- A `blossom` tag containing a [BUD-10](https://github.com/hzrd149/blossom/blob/master/buds/10.md) `blossom:` URI that encodes the SHA-256 hash, file extension, all mirror domains as `xs=` params, the uploader's pubkey as `as=`, and the file size as `sz=`.
+
+The `blossom` tag is informational and OPTIONAL; clients that do not understand it MUST ignore it.
+
+### BUD-10 `blossom:` URI
+
+The `blossom` tag value follows the BUD-10 URI schema:
+
+```
+blossom:<sha256>.<ext>?xs=<domain>[&xs=<domain>...]&as=<pubkey>&sz=<bytes>
+```
+
+| Component | Description |
+|-----------|-------------|
+| `<sha256>` | 64-character lowercase hex SHA-256 of the file |
+| `.<ext>` | File extension (e.g. `.pdf`, `.epub`, `.jpg`); defaults to `.bin` if unknown |
+| `xs=<domain>` | Domain of a Blossom server where the blob is available (one per mirror) |
+| `as=<pubkey>` | Hex pubkey of the uploader; enables BUD-03 server-list discovery |
+| `sz=<bytes>` | File size in bytes for pre-download verification |
+
+#### Example — Magazine Issue with mirrors
+
+```json
+{
+  "kind": 39731,
+  "tags": [
+    ["d", "2024-05"],
+    ["title", "Bitcoin Magazine — May 2024"],
+    ["issue", "May 2024"],
+    ["a", "34609:ab12cd...:bitcoin-magazine"],
+    ["image", "https://blossom.primal.net/deadbeef...webp"],
+    ["url", "https://blossom.primal.net/deadbeef...pdf"],
+    ["url", "https://cdn.satellite.earth/deadbeef...pdf"],
+    ["url", "https://blossom.ditto.pub/deadbeef...pdf"],
+    ["m", "application/pdf"],
+    ["size", "14285714"],
+    ["x", "deadbeef..."],
+    ["blossom", "blossom:deadbeef....pdf?xs=blossom.primal.net&xs=cdn.satellite.earth&xs=blossom.ditto.pub&as=ab12cd...&sz=14285714"],
+    ["alt", "Magazine Issue: Bitcoin Magazine — May 2024, Issue May 2024"]
+  ]
+}
+```
+
+#### Updated Tag Tables
+
+The `url` and `blossom` tags for Magazine Issue (kind 39731):
+
+| Tag | Req | Description |
+|-----|-----|-------------|
+| `url` | **required** | URL of the PDF file on a Blossom server. MAY appear multiple times (one per mirror). |
+| `blossom` | optional | BUD-10 `blossom:` URI encoding hash, mirrors, author pubkey, and size. |
+
+The `url` and `blossom` tags for Ebook (kind 33953):
+
+| Tag | Req | Description |
+|-----|-----|-------------|
+| `url` | **required** | URL of the ebook file (PDF or EPUB). MAY appear multiple times (one per mirror). |
+| `blossom` | optional | BUD-10 `blossom:` URI encoding hash, mirrors, author pubkey, and size. |
 
 ---
 

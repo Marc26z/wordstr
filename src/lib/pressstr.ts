@@ -24,6 +24,10 @@ export interface MagazineIssueData {
   mimeType: string;
   fileSize?: number;
   fileHash?: string;
+  /** BUD-10 blossom: URI for the file (includes xs= mirror hints) */
+  blossomUri?: string;
+  /** Additional mirror URLs for the file (one url tag per mirror) */
+  mirrorUrls?: string[];
   summary?: string;
   publishedAt?: number;
   topics: string[];
@@ -41,6 +45,10 @@ export interface EbookData {
   publishedAt?: number;
   fileSize?: number;
   fileHash?: string;
+  /** BUD-10 blossom: URI for the file (includes xs= mirror hints) */
+  blossomUri?: string;
+  /** Additional mirror URLs for the file (one url tag per mirror) */
+  mirrorUrls?: string[];
   topics: string[];
   language?: string;
   isbn?: string;

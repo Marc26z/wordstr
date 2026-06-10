@@ -33,12 +33,23 @@ export function usePublishMagazine() {
         ['issue', data.issue],
         ['a', data.magazineCoord],
         ['image', data.image],
+        // Primary URL always first
         ['url', data.fileUrl],
         ['m', data.mimeType],
         ['alt', `Magazine Issue: ${data.title}, Issue ${data.issue}`],
       ];
       if (data.fileSize) tags.push(['size', String(data.fileSize)]);
       if (data.fileHash) tags.push(['x', data.fileHash]);
+      // Additional mirror URLs (skip the primary to avoid duplicates)
+      if (data.mirrorUrls) {
+        for (const mirrorUrl of data.mirrorUrls) {
+          if (mirrorUrl && mirrorUrl !== data.fileUrl) {
+            tags.push(['url', mirrorUrl]);
+          }
+        }
+      }
+      // BUD-10 blossom: URI
+      if (data.blossomUri) tags.push(['blossom', data.blossomUri]);
       if (data.summary) tags.push(['summary', data.summary]);
       if (data.publishedAt) tags.push(['published_at', String(data.publishedAt)]);
       for (const t of data.topics) {
@@ -56,6 +67,7 @@ export function usePublishMagazine() {
         ['d', data.d],
         ['title', data.title],
         ['image', data.image],
+        // Primary URL always first
         ['url', data.fileUrl],
         ['m', data.mimeType],
         ['alt', `Ebook: ${data.title}`],
@@ -67,6 +79,16 @@ export function usePublishMagazine() {
       if (data.publishedAt) tags.push(['published_at', String(data.publishedAt)]);
       if (data.fileSize) tags.push(['size', String(data.fileSize)]);
       if (data.fileHash) tags.push(['x', data.fileHash]);
+      // Additional mirror URLs (skip the primary to avoid duplicates)
+      if (data.mirrorUrls) {
+        for (const mirrorUrl of data.mirrorUrls) {
+          if (mirrorUrl && mirrorUrl !== data.fileUrl) {
+            tags.push(['url', mirrorUrl]);
+          }
+        }
+      }
+      // BUD-10 blossom: URI
+      if (data.blossomUri) tags.push(['blossom', data.blossomUri]);
       if (data.language) tags.push(['l', data.language]);
       if (data.isbn) tags.push(['isbn', data.isbn]);
       for (const t of data.topics) {

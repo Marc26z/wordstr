@@ -15,6 +15,20 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: '1.2.0',
+    date: '2026-06-10',
+    tag: 'feat',
+    title: 'Multi-server Blossom uploads and BUD-10 blossom: URI support',
+    items: [
+      'Files (PDFs, EPUBs, cover images) are now uploaded to all 5 Blossom servers simultaneously instead of stopping at the first success — every upload is automatically mirrored for resilience.',
+      'Added blossom.ditto.pub to the Blossom server pool alongside primal.net, satellite.earth, nostrcheck.me, and blossom.band.',
+      'Published events now include one url tag per successful mirror, so readers can fall back to an alternate server if one goes offline.',
+      'Published events now include a blossom tag with a BUD-10 blossom: URI encoding the SHA-256 hash, file extension, all mirror server domains (xs= params), the uploader\'s pubkey (as= param), and the file size (sz= param).',
+      'Edit (re-publish) flows preserve existing mirror url tags and blossom: URI from the original event when the file is not replaced.',
+      'NIP.md updated to document multi-server mirroring and the BUD-10 blossom: URI tag schema.',
+    ],
+  },
+  {
     version: '1.1.2',
     date: '2026-05-23',
     tag: 'fix',

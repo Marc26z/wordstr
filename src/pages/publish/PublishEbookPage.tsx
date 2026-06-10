@@ -80,6 +80,8 @@ export function PublishEbookPage() {
           : undefined,
         fileSize: fileResult.fileSize || undefined,
         fileHash: fileResult.fileHash || undefined,
+        blossomUri: fileResult.blossomUri,
+        mirrorUrls: fileResult.mirrorUrls,
         topics: values.topics.split(',').map((t) => t.trim()).filter(Boolean),
         language: values.language.trim() || undefined,
         isbn: values.isbn.trim() || undefined,
