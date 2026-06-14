@@ -114,8 +114,16 @@ function serverDomain(serverUrl: string): string {
 }
 
 /**
+ * Per-server upload timeout in milliseconds.
+ * If a server doesn't respond within this window it is treated as failed.
+ * 30 s is generous enough for large PDFs on slow connections while still
+ * preventing the UI from appearing frozen.
+ */
+const UPLOAD_TIMEOUT_MS = 30_000;
+
+/**
  * Upload a file to a single Blossom server.
- * Returns the URL on success, or null on any error.
+ * Resolves with the blob URL on success, or null on any error / timeout.
  */
 async function uploadToServer(
   server: string,
@@ -123,10 +131,14 @@ async function uploadToServer(
   mimeType: string,
   authorization: string,
 ): Promise<string | null> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), UPLOAD_TIMEOUT_MS);
+
   try {
     const response = await fetch(`${server}/upload`, {
       method: 'PUT',
       body: file,
+      signal: controller.signal,
       headers: {
         'Authorization': authorization,
         'Content-Type': mimeType,
@@ -148,6 +160,8 @@ async function uploadToServer(
     return blobUrl ?? null;
   } catch {
     return null;
+  } finally {
+    clearTimeout(timer);
   }
 }
 
@@ -192,31 +206,64 @@ export function useBlossomUpload() {
       }
       const authorization = `Nostr ${toBase64(binary)}`;
 
-      // 4. Upload to ALL servers in parallel — collect every success
-      const results = await Promise.all(
-        BLOSSOM_SERVERS.map((server) =>
-          uploadToServer(server, file, mimeType, authorization).then(
-            (url) => ({ server, url }),
-          ),
-        ),
+      // 4. Fire uploads to all servers in parallel, each with a hard timeout.
+      //
+      //    Strategy: return to the caller as soon as the FIRST server succeeds
+      //    (so the UI unblocks quickly), but keep collecting any additional
+      //    mirrors that finish within a short grace window so we can include
+      //    them in the blossom: URI and mirror url tags.
+      //
+      //    We achieve this with a two-phase approach:
+      //      a) Race for the first success (Promise.any over per-server promises).
+      //      b) Wait a short grace period (MIRROR_GRACE_MS) for stragglers.
+
+      const MIRROR_GRACE_MS = 5_000; // how long to wait for extra mirrors after first success
+
+      // Track all per-server results as they settle
+      const settled: { server: string; url: string }[] = [];
+
+      const serverPromises = BLOSSOM_SERVERS.map((server) =>
+        uploadToServer(server, file, mimeType, authorization).then((url) => {
+          if (url) settled.push({ server, url });
+          return url;
+        }),
       );
 
-      const successes = results.filter((r): r is { server: string; url: string } => r.url !== null);
-
-      if (successes.length === 0) {
+      // Wait for first non-null result; throws AggregateError if all are null
+      let primaryUrl: string;
+      try {
+        // Promise.any rejects only if every promise resolves to a non-thenable
+        // rejection — but our helper always resolves (never rejects), so we
+        // need to convert null results into rejections for Promise.any.
+        primaryUrl = await Promise.any(
+          serverPromises.map((p) =>
+            p.then((url) => {
+              if (!url) throw new Error('server failed');
+              return url;
+            }),
+          ),
+        );
+      } catch {
         throw new Error(
           'All Blossom servers failed to accept the upload. Check your internet connection and try again.',
         );
       }
 
-      // 5. Primary URL is the first successful upload
-      const primaryUrl = successes[0].url;
-      const mirrorUrls = successes.map((s) => s.url);
+      // Grace period: collect any additional mirrors that finish quickly
+      await Promise.race([
+        // Either all remaining uploads finish…
+        Promise.allSettled(serverPromises),
+        // …or the grace window expires — whichever comes first
+        new Promise<void>((resolve) => setTimeout(resolve, MIRROR_GRACE_MS)),
+      ]);
 
-      // 6. Build a BUD-10 blossom: URI
+      // Deduplicate and keep stable order (BLOSSOM_SERVERS order)
+      const mirrorUrls = settled.map((s) => s.url);
+
+      // 5. Build a BUD-10 blossom: URI
       //    Format: blossom:<sha256>.<ext>?xs=<domain>[&xs=<domain>...]&as=<pubkey>&sz=<bytes>
       const ext = fileExtension(file, mimeType);
-      const xsParams = successes.map((s) => `xs=${encodeURIComponent(serverDomain(s.server))}`).join('&');
+      const xsParams = settled.map((s) => `xs=${encodeURIComponent(serverDomain(s.server))}`).join('&');
       const asParam = `as=${user.pubkey}`;
       const szParam = `sz=${file.size}`;
       const blossomUri = `blossom:${x}.${ext}?${xsParams}&${asParam}&${szParam}`;
