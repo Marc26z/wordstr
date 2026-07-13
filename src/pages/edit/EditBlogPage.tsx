@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { nip19 } from 'nostr-tools';
+import { blogPostUrl } from '@/lib/blogUrl';
 import { useForm } from 'react-hook-form';
 import { useNostr } from '@nostrify/react';
 import { useQuery } from '@tanstack/react-query';
@@ -119,14 +120,8 @@ export function EditBlogPage() {
         tags,
       });
 
-      const updatedNaddr = nip19.naddrEncode({
-        kind: KIND_BLOG_POST,
-        pubkey: updated.pubkey,
-        identifier: decoded.identifier,
-      });
-
       toast({ title: 'Post updated!', description: values.title });
-      navigate(`/${updatedNaddr}`);
+      navigate(blogPostUrl(updated.pubkey, decoded.identifier));
     } catch (err) {
       toast({
         title: 'Failed to update',
@@ -166,7 +161,7 @@ export function EditBlogPage() {
     <div className="min-h-screen bg-background">
       <div className="max-w-3xl mx-auto px-4 py-8">
         <div className="flex items-center gap-3 mb-8">
-          <Link to={`/${naddr}`}>
+          <Link to={decoded ? blogPostUrl(decoded.pubkey, decoded.identifier) : '/'}>
             <Button variant="ghost" size="sm">
               <ArrowLeft className="w-4 h-4" />
             </Button>

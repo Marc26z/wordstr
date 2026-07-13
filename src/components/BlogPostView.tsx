@@ -57,12 +57,6 @@ export function BlogPostView({ event, naddr }: BlogPostViewProps) {
         day: 'numeric',
       });
 
-  // unused variable suppressed — editNaddr is built inline in the dropdown
-  void nip19.naddrEncode({
-    kind: KIND_BLOG_POST,
-    pubkey: event.pubkey,
-    identifier: getTag(event, 'd') ?? '',
-  });
 
   return (
     <div className="min-h-screen bg-background">

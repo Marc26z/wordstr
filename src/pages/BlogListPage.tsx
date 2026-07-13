@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom';
 import type { NostrEvent } from '@nostrify/nostrify';
 import { nip19 } from 'nostr-tools';
+import { blogPostUrl } from '@/lib/blogUrl';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthor } from '@/hooks/useAuthor';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { useAuthorBlogs, KIND_BLOG_POST } from '@/hooks/useBlogs';
+import { useAuthorBlogs } from '@/hooks/useBlogs';
 import { genUserName } from '@/lib/genUserName';
 import { ArrowLeft, Calendar, FileEdit, Globe, Plus, User } from 'lucide-react';
 
@@ -22,11 +23,7 @@ function BlogCard({ event }: { event: NostrEvent }) {
   const topics = event.tags.filter(([n]) => n === 't').map(([, v]) => v);
   const dTag = getTag(event, 'd') ?? '';
 
-  const naddr = nip19.naddrEncode({
-    kind: KIND_BLOG_POST,
-    pubkey: event.pubkey,
-    identifier: dTag,
-  });
+  const postUrl = blogPostUrl(event.pubkey, dTag);
 
   const publishedDate = publishedAt
     ? new Date(Number(publishedAt) * 1000).toLocaleDateString(undefined, {
@@ -41,7 +38,7 @@ function BlogCard({ event }: { event: NostrEvent }) {
       });
 
   return (
-    <Link to={`/${naddr}`} className="group block">
+    <Link to={postUrl} className="group block">
       <article className="flex flex-col sm:flex-row gap-4 rounded-2xl border bg-card hover:border-purple-400/60 hover:shadow-md hover:shadow-purple-500/10 transition-all duration-200 overflow-hidden p-0">
         {/* Thumbnail */}
         {image ? (

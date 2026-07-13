@@ -15,6 +15,20 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: '1.4.2',
+    date: '2026-07-13',
+    tag: 'feat',
+    title: 'Human-readable blog post URLs using article slug',
+    items: [
+      'Blog posts are now served at /blog/:npub/:slug (e.g. /blog/npub1marc…/my-post-title) instead of the opaque naddr1… identifier.',
+      'New BlogPostPage component handles the /blog/:npub/:slug route — decodes the npub to a hex pubkey and queries Nostr for the matching kind 30023 event by author + d-tag.',
+      'After publishing or editing a blog post, the app navigates to the slug URL automatically.',
+      'All blog card links on the homepage and author blog list now use the slug URL.',
+      'naddr1 links still resolve through the NIP-19 catch-all route for compatibility with other Nostr clients.',
+      'New blogPostUrl(pubkey, slug) helper in src/lib/blogUrl.ts centralises URL construction.',
+    ],
+  },
+  {
     version: '1.4.1',
     date: '2026-07-13',
     tag: 'fix',

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { nip19 } from 'nostr-tools';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +11,7 @@ import { useNostrPublish } from '@/hooks/useNostrPublish';
 import { HeroImageUploader } from '@/components/HeroImageUploader';
 import { LoginArea } from '@/components/auth/LoginArea';
 import { slugify } from '@/lib/pressstr';
+import { blogPostUrl } from '@/lib/blogUrl';
 import { ArrowLeft, Loader2, FileEdit, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 import { KIND_BLOG_POST } from '@/hooks/useBlogs';
@@ -77,14 +77,8 @@ export function PublishBlogPage() {
         tags,
       });
 
-      const naddr = nip19.naddrEncode({
-        kind: KIND_BLOG_POST,
-        pubkey: event.pubkey,
-        identifier: d,
-      });
-
       toast({ title: 'Blog post published!', description: values.title });
-      navigate(`/${naddr}`);
+      navigate(blogPostUrl(event.pubkey, d));
     } catch (err) {
       toast({
         title: 'Failed to publish',
@@ -145,7 +139,7 @@ export function PublishBlogPage() {
             )}
             {title && (
               <p className="text-xs text-muted-foreground">
-                Slug: <code className="bg-muted px-1 rounded">{slugify(title) || '—'}</code>
+                URL: <code className="bg-muted px-1 rounded">/blog/npub1…/{slugify(title) || '—'}</code>
               </p>
             )}
           </div>

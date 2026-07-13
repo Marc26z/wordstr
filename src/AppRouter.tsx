@@ -12,6 +12,7 @@ import { EditMagazinePage } from "./pages/edit/EditMagazinePage";
 import { EditIssuePage } from "./pages/edit/EditIssuePage";
 import { EditEbookPage } from "./pages/edit/EditEbookPage";
 import { EditBlogPage } from "./pages/edit/EditBlogPage";
+import { BlogPostPage } from "./pages/BlogPostPage";
 import { ChangelogPage } from "./pages/ChangelogPage";
 import NotFound from "./pages/NotFound";
 
@@ -26,6 +27,8 @@ export function AppRouter() {
         <Route path="/publish/issue" element={<PublishIssuePage />} />
         <Route path="/publish/ebook" element={<PublishEbookPage />} />
         <Route path="/publish/blog" element={<PublishBlogPage />} />
+        {/* Human-readable blog post URL: /blog/:npub/:slug */}
+        <Route path="/blog/:npub/:slug" element={<BlogPostPage />} />
         <Route path="/changelog" element={<ChangelogPage />} />
         <Route path="/edit/magazine/:naddr" element={<EditMagazinePage />} />
         <Route path="/edit/issue/:naddr" element={<EditIssuePage />} />

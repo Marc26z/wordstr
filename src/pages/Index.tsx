@@ -10,7 +10,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { LoginArea } from '@/components/auth/LoginArea';
 import { MagazineCard, EbookCard } from '@/components/PublicationCard';
 import { useMagazines, useEbooks } from '@/hooks/useMagazines';
-import { useBlogs, KIND_BLOG_POST } from '@/hooks/useBlogs';
+import { useBlogs } from '@/hooks/useBlogs';
+import { blogPostUrl } from '@/lib/blogUrl';
 import { useAuthor } from '@/hooks/useAuthor';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { genUserName } from '@/lib/genUserName';
@@ -33,11 +34,7 @@ function BlogPreviewCard({ event }: { event: NostrEvent }) {
   const authorPicture = author.data?.metadata?.picture;
   const authorNpub = nip19.npubEncode(event.pubkey);
 
-  const naddr = nip19.naddrEncode({
-    kind: KIND_BLOG_POST,
-    pubkey: event.pubkey,
-    identifier: dTag,
-  });
+  const postUrl = blogPostUrl(event.pubkey, dTag);
 
   const publishedDate = publishedAt
     ? new Date(Number(publishedAt) * 1000).toLocaleDateString(undefined, {
@@ -52,7 +49,7 @@ function BlogPreviewCard({ event }: { event: NostrEvent }) {
       });
 
   return (
-    <Link to={`/${naddr}`} className="group block">
+    <Link to={postUrl} className="group block">
       <article className="rounded-2xl border bg-card overflow-hidden hover:border-purple-400/60 hover:shadow-md hover:shadow-purple-500/10 transition-all duration-200 h-full flex flex-col">
         {image ? (
           <div className="aspect-video overflow-hidden">
