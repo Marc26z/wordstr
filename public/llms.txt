@@ -1,10 +1,10 @@
-# PressStr
+# WordStr
 
-> PressStr is a decentralised magazine and ebook publishing platform built on the Nostr protocol. Publishers upload PDF and EPUB files to Blossom content-addressed storage servers, then broadcast structured Nostr events that describe the publication. Readers can browse, download, and comment on content through any NIP-89-compatible client, or directly on the PressStr web app at https://pressstr.shakespeare.wtf.
+> WordStr is a decentralised magazine and ebook publishing platform built on the Nostr protocol. Publishers upload PDF and EPUB files to Blossom content-addressed storage servers, then broadcast structured Nostr events that describe the publication. Readers can browse, download, and comment on content through any NIP-89-compatible client, or directly on the WordStr web app at https://blog.cloudflareblog.workers.dev.
 
 ## Overview
 
-PressStr defines three new addressable Nostr event kinds (documented in `NIP.md` in the repository root):
+WordStr defines three new addressable Nostr event kinds (documented in `NIP.md` in the repository root):
 
 - **Kind 34609 — Magazine**: A named periodical publication. Carries a title, optional logo image, description, topics, language, and website URL. Identified by `pubkey + kind + d` tag.
 - **Kind 39731 — Magazine Issue**: A single issue of a magazine. Carries a free-form issue label (not restricted to numbers), a cover image, a PDF file URL, file size, SHA-256 hash, and a reference to the parent magazine via an `a` tag (`34609:<pubkey>:<d>`).
@@ -97,7 +97,7 @@ This URI is stored in a `blossom` tag on issue and ebook events. It encodes the 
 
 ## PDF Cover Extraction
 
-When publishing an issue or ebook from a PDF and no cover image is provided, PressStr automatically renders the first page of the PDF to a JPEG at ~600 px wide and uploads it to Blossom. This uses PDF.js loaded from `cdnjs.cloudflare.com` via a dynamically-injected `<script type="module">` pointing at a `blob:` URL (required to satisfy the CSP while avoiding bundler interception). The worker URL is set to the same CDN.
+When publishing an issue or ebook from a PDF and no cover image is provided, WordStr automatically renders the first page of the PDF to a JPEG at ~600 px wide and uploads it to Blossom. This uses PDF.js loaded from `cdnjs.cloudflare.com` via a dynamically-injected `<script type="module">` pointing at a `blob:` URL (required to satisfy the CSP while avoiding bundler interception). The worker URL is set to the same CDN.
 
 ## Authentication & Login
 
@@ -114,16 +114,23 @@ The `LoginArea` component handles all login flows via `@nostrify/react/login`.
 - CSP in `index.html` allows `script-src 'self' https://cdnjs.cloudflare.com blob:` specifically for the PDF.js CDN loader pattern.
 - Nostr private keys stored via nsec login are in plaintext localStorage. XSS is the primary threat; `dangerouslySetInnerHTML` is never used.
 
+## Visual Design
+
+- **Colour scheme**: Black × Purple × White
+  - Light mode: white background, near-black text, violet-600 primary
+  - Dark mode: near-black background (#0d0a14), white text, violet-500 primary
+- **Hero section**: Dark gradient (black → purple-950 → violet-900) with dot-grid overlay and glow blobs
+- **Brand**: gradient "WordStr" wordmark (violet → purple)
+
 ## Version History
 
 See `/changelog` in the app or `src/pages/ChangelogPage.tsx` in the source for the full release history.
 
-Current version: **1.2.0**
+Current version: **1.3.0**
 
 ## Links
 
-- App: https://pressstr.shakespeare.wtf
-- Changelog: https://pressstr.shakespeare.wtf/changelog
-- Repository: nostr://npub14rg4vrt2v374q95ezeeydu3hkdhmzglcj950mggacap4x0lv0gyq04wun7/relay.ngit.dev/pressstr
-- NIP specification: https://pressstr.shakespeare.wtf/llms.txt (this file) and `NIP.md` in the repository
+- App: https://blog.cloudflareblog.workers.dev
+- Changelog: https://blog.cloudflareblog.workers.dev/changelog
+- NIP specification: https://blog.cloudflareblog.workers.dev/llms.txt (this file) and `NIP.md` in the repository
 - Built with: https://shakespeare.diy

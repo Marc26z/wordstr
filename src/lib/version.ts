@@ -1,2 +1,2 @@
-/** Current PressStr application version. Update this on every release. */
-export const APP_VERSION = '1.2.0';
+/** Current WordStr application version. Update this on every release. */
+export const APP_VERSION = '1.3.0';

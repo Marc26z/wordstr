@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useSeoMeta } from '@unhead/react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Newspaper } from 'lucide-react';
+import { ArrowLeft, BookOpen } from 'lucide-react';
 import { APP_VERSION } from '@/lib/version';
 
 interface Release {
@@ -14,6 +14,24 @@ interface Release {
 }
 
 const RELEASES: Release[] = [
+  {
+    version: '1.3.0',
+    date: '2026-07-13',
+    tag: 'feat',
+    title: 'Rebranded to WordStr with black, purple & white theme',
+    items: [
+      'Application renamed from PressStr to WordStr across all pages, meta tags, manifests, and documentation.',
+      'New black × purple × white colour scheme: rich violet primary (#7c3aed), near-black backgrounds in dark mode, crisp white in light mode.',
+      'Hero section redesigned with a dark gradient (black → purple), dot-grid overlay, animated glow blobs, and gradient headline.',
+      'Navbar logo updated: purple gradient icon with gradient "WordStr" wordmark.',
+      'Tab active state now uses purple-600 pill.',
+      'Empty-state cards use purple-tinted dashed borders and purple icon backgrounds.',
+      'Publish hub cards restyled with purple/violet/fuchsia icon badges.',
+      'Changelog timeline dot updated to purple.',
+      'Footer Nostr link highlighted in purple.',
+      'theme-color meta tag updated to #7c3aed.',
+    ],
+  },
   {
     version: '1.2.0',
     date: '2026-06-10',
@@ -130,8 +148,8 @@ const tagLabels: Record<Release['tag'], string> = {
 
 export function ChangelogPage() {
   useSeoMeta({
-    title: `Changelog — PressStr v${APP_VERSION}`,
-    description: 'Full release history for PressStr, the decentralised magazine and ebook platform on Nostr.',
+    title: `Changelog — WordStr v${APP_VERSION}`,
+    description: 'Full release history for WordStr, the decentralised magazine and ebook platform on Nostr.',
   });
 
   return (
@@ -145,10 +163,10 @@ export function ChangelogPage() {
             </Button>
           </Link>
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
-              <Newspaper className="w-3.5 h-3.5 text-white" />
+            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-violet-600 to-purple-800 flex items-center justify-center shadow-sm shadow-purple-500/20">
+              <BookOpen className="w-3.5 h-3.5 text-white" />
             </div>
-            <span className="font-bold tracking-tight">PressStr</span>
+            <span className="font-extrabold tracking-tight bg-gradient-to-r from-violet-600 to-purple-500 bg-clip-text text-transparent">WordStr</span>
           </Link>
           <span className="text-muted-foreground text-sm">/</span>
           <span className="text-sm font-medium">Changelog</span>
@@ -161,7 +179,7 @@ export function ChangelogPage() {
         <div className="mb-10">
           <h1 className="text-3xl font-bold mb-2">Changelog</h1>
           <p className="text-muted-foreground">
-            All notable changes to PressStr, in reverse-chronological order.
+            All notable changes to WordStr, in reverse-chronological order.
           </p>
         </div>
 
@@ -174,7 +192,7 @@ export function ChangelogPage() {
               <div key={release.version} className="relative pl-10">
                 {/* Timeline dot */}
                 <div className="absolute left-0 top-1.5 w-7 h-7 rounded-full border-2 border-border bg-background flex items-center justify-center">
-                  <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-purple-500" />
                 </div>
 
                 <div className="space-y-3">
@@ -217,12 +235,12 @@ export function ChangelogPage() {
         {/* Footer note */}
         <div className="mt-16 pt-8 border-t text-center text-sm text-muted-foreground">
           <p>
-            PressStr is open-source and built on{' '}
-            <a href="https://nostr.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Nostr</a>.{' '}
+            WordStr is open-source and built on{' '}
+            <a href="https://nostr.com" target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 transition-colors">Nostr</a>.{' '}
             <a href="https://shakespeare.diy" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Vibed with Shakespeare</a>.
           </p>
           <p className="mt-1">
-            <Link to="/" className="hover:text-foreground transition-colors">← Back to PressStr</Link>
+            <Link to="/" className="hover:text-foreground transition-colors">← Back to WordStr</Link>
           </p>
         </div>
       </div>

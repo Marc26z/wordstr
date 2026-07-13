@@ -1,4 +1,4 @@
-// PressStr kind constants (defined in NIP.md)
+// WordStr kind constants (defined in NIP.md)
 export const KIND_MAGAZINE = 34609;
 export const KIND_MAGAZINE_ISSUE = 39731;
 export const KIND_EBOOK = 33953;
