@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Newspaper, BookOpen, FileText, ArrowLeft } from 'lucide-react';
+import { Newspaper, BookOpen, FileText, ArrowLeft, FileEdit } from 'lucide-react';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { LoginArea } from '@/components/auth/LoginArea';
 
@@ -14,7 +14,7 @@ export function PublishPage() {
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-2">Publish on WordStr</h2>
           <p className="text-muted-foreground mb-6">
-            Log in to start publishing magazines and ebooks on Nostr.
+            Log in to start publishing magazines, ebooks and blog posts on Nostr.
           </p>
         </div>
         <LoginArea className="max-w-60" />
@@ -38,6 +38,24 @@ export function PublishPage() {
         </div>
 
         <div className="grid gap-4">
+          {/* Blog Post */}
+          <Link to="/publish/blog">
+            <Card className="group hover:shadow-md hover:shadow-purple-500/10 transition-all duration-200 cursor-pointer border-2 hover:border-purple-500/50">
+              <CardContent className="p-6 flex items-center gap-4">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-violet-100 to-purple-100 dark:from-violet-900/30 dark:to-purple-900/30 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                  <FileEdit className="w-7 h-7 text-violet-600 dark:text-violet-400" />
+                </div>
+                <div>
+                  <h2 className="font-semibold text-lg">Blog Post</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Write a long-form article in Markdown (NIP-23)
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          {/* Magazine */}
           <Link to="/publish/magazine">
             <Card className="group hover:shadow-md hover:shadow-purple-500/10 transition-all duration-200 cursor-pointer border-2 hover:border-purple-500/50">
               <CardContent className="p-6 flex items-center gap-4">
@@ -54,6 +72,7 @@ export function PublishPage() {
             </Card>
           </Link>
 
+          {/* Issue */}
           <Link to="/publish/issue">
             <Card className="group hover:shadow-md hover:shadow-purple-500/10 transition-all duration-200 cursor-pointer border-2 hover:border-purple-500/50">
               <CardContent className="p-6 flex items-center gap-4">
@@ -70,6 +89,7 @@ export function PublishPage() {
             </Card>
           </Link>
 
+          {/* Ebook */}
           <Link to="/publish/ebook">
             <Card className="group hover:shadow-md hover:shadow-purple-500/10 transition-all duration-200 cursor-pointer border-2 hover:border-purple-500/50">
               <CardContent className="p-6 flex items-center gap-4">

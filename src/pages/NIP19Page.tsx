@@ -8,7 +8,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { MagazineView } from '@/components/MagazineView';
 import { IssueView } from '@/components/IssueView';
 import { EbookView } from '@/components/EbookView';
+import { BlogPostView } from '@/components/BlogPostView';
+import { BlogListPage } from '@/pages/BlogListPage';
 import { KIND_MAGAZINE, KIND_MAGAZINE_ISSUE, KIND_EBOOK } from '@/lib/pressstr';
+import { KIND_BLOG_POST } from '@/hooks/useBlogs';
 
 function LoadingPage() {
   return (
@@ -48,8 +51,10 @@ export function NIP19Page() {
 
   switch (type) {
     case 'npub':
+      return <BlogListPage pubkey={decoded.data} />;
+
     case 'nprofile':
-      return <div className="p-8 text-center text-muted-foreground">Profile view coming soon.</div>;
+      return <BlogListPage pubkey={decoded.data.pubkey} />;
 
     case 'note':
       return <div className="p-8 text-center text-muted-foreground">Note view coming soon.</div>;
@@ -101,6 +106,8 @@ function NaddrView({ data, naddr }: { data: NaddrData; naddr: string }) {
       return <IssueView event={event} naddr={naddr} />;
     case KIND_EBOOK:
       return <EbookView event={event} naddr={naddr} />;
+    case KIND_BLOG_POST:
+      return <BlogPostView event={event} naddr={naddr} />;
     default:
       return (
         <div className="p-8 text-center text-muted-foreground">

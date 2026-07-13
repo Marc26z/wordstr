@@ -4,13 +4,14 @@
 
 ## Overview
 
-WordStr defines three new addressable Nostr event kinds (documented in `NIP.md` in the repository root):
+WordStr uses three custom addressable Nostr event kinds (documented in `NIP.md`) plus the standard NIP-23 long-form blog kind:
 
 - **Kind 34609 — Magazine**: A named periodical publication. Carries a title, optional logo image, description, topics, language, and website URL. Identified by `pubkey + kind + d` tag.
 - **Kind 39731 — Magazine Issue**: A single issue of a magazine. Carries a free-form issue label (not restricted to numbers), a cover image, a PDF file URL, file size, SHA-256 hash, and a reference to the parent magazine via an `a` tag (`34609:<pubkey>:<d>`).
 - **Kind 33953 — Ebook**: A standalone ebook in PDF or EPUB format. Carries a title, cover image, file URL, authors, ISBN, language, topics, and file integrity data.
+- **Kind 30023 — Blog Post** (NIP-23): Long-form Markdown articles. Standard fields: `d` slug, `title`, `image`, `summary`, `published_at`, `t` topic tags. Content is raw Markdown rendered with `react-markdown` + `remark-gfm`.
 
-All three kinds are **addressable events** (kind range 30000–39999). Editing re-publishes with the same `d` tag, replacing the event in-place on relays. Deletion sends a NIP-09 kind-5 request.
+All four kinds are **addressable events** (kind range 30000–39999). Editing re-publishes with the same `d` tag, replacing the event in-place on relays. Deletion sends a NIP-09 kind-5 request.
 
 ## Technology Stack
 
@@ -39,7 +40,12 @@ All three kinds are **addressable events** (kind range 30000–39999). Editing r
 - `src/components/IssueView.tsx` — Issue detail page (cover, metadata, download, NIP-22 comments section).
 - `src/components/EbookView.tsx` — Ebook detail page (cover, metadata, download, NIP-22 comments section).
 - `src/components/comments/CommentsSection.tsx` — NIP-22 threaded comment renderer.
-- `src/pages/Index.tsx` — Home page with Magazines/Ebooks tabs.
+- `src/hooks/useBlogs.ts` — TanStack Query hooks: `useBlogs` (global feed), `useAuthorBlogs` (by pubkey), `useBlogPost` (single by pubkey+d). Exports `KIND_BLOG_POST = 30023`.
+- `src/components/BlogPostView.tsx` — Blog post detail: always-dark Markdown renderer, author card, NIP-22 comments.
+- `src/pages/BlogListPage.tsx` — Author profile page showing profile banner, avatar, bio, and all blog posts.
+- `src/pages/publish/PublishBlogPage.tsx` — Markdown editor with Write/Preview tabs for new blog posts.
+- `src/pages/edit/EditBlogPage.tsx` — Pre-filled edit form for existing blog posts.
+- `src/pages/Index.tsx` — Home page with Magazines / Ebooks / Blogs tabs.
 - `src/pages/ChangelogPage.tsx` — Full release history at `/changelog`.
 - `src/pages/NIP19Page.tsx` — NIP-19 router: decodes naddr identifiers and renders the correct view.
 - `src/pages/publish/` — Publish forms: `PublishPage`, `PublishMagazinePage`, `PublishIssuePage`, `PublishEbookPage`.
@@ -61,16 +67,19 @@ All three kinds are **addressable events** (kind range 30000–39999). Editing r
 | `/edit/magazine/:naddr` | Edit a magazine (owner only) |
 | `/edit/issue/:naddr` | Edit a magazine issue (owner only) |
 | `/edit/ebook/:naddr` | Edit an ebook (owner only) |
-| `/:nip19` | NIP-19 universal route: renders magazine, issue, or ebook by naddr |
+| `/publish/blog` | Write a new NIP-23 blog post |
+| `/edit/blog/:naddr` | Edit a blog post (owner only) |
+| `/:nip19` | NIP-19 universal route: npub → author blog list; naddr → magazine/issue/ebook/blog |
 
 ## Nostr Event Kinds
 
 | Kind | Name | Range | Description |
 |---|---|---|---|
+| 30023 | Blog Post | Addressable | NIP-23 long-form Markdown article |
 | 34609 | Magazine | Addressable | Named publication, groups issues |
 | 39731 | Magazine Issue | Addressable | Single PDF issue of a magazine |
 | 33953 | Ebook | Addressable | Standalone PDF or EPUB ebook |
-| 1111 | Comment | Regular | NIP-22 threaded comment on an issue or ebook |
+| 1111 | Comment | Regular | NIP-22 threaded comment |
 | 5 | Deletion | Regular | NIP-09 deletion request |
 | 24242 | Blossom Auth | Regular | BUD-02 upload authorisation event |
 
@@ -126,7 +135,7 @@ The `LoginArea` component handles all login flows via `@nostrify/react/login`.
 
 See `/changelog` in the app or `src/pages/ChangelogPage.tsx` in the source for the full release history.
 
-Current version: **1.3.0**
+Current version: **1.4.0**
 
 ## Links
 

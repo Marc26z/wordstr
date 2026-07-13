@@ -15,6 +15,23 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: '1.4.0',
+    date: '2026-07-13',
+    tag: 'feat',
+    title: 'NIP-23 blog posts — write, publish & browse long-form articles',
+    items: [
+      'New Blog Post type: publish long-form Markdown articles as NIP-23 kind 30023 addressable events.',
+      'Markdown editor with live Write / Preview tabs on the publish and edit forms — supports GFM (tables, strikethrough, task lists).',
+      'Blogs tab on the homepage showing the 30 most recent posts from the network in a responsive card grid with cover image, tags, author avatar and date.',
+      'Blog post view: dark-mode rich Markdown renderer (black background, violet headings, purple code highlights, blockquote glow) with author card and NIP-22 comments.',
+      'Author blog list: visiting any npub now shows that person\'s profile banner, avatar, bio, and all their blog posts sorted newest-first.',
+      '"View all posts" button on blog post view links back to the author\'s blog list page.',
+      'Edit blog post form at /edit/blog/:naddr — pre-fills all fields from the existing event.',
+      'Publish hub updated: Blog Post card appears at the top as the primary new content type.',
+      'Added react-markdown and remark-gfm for CSP-safe Markdown rendering (no dangerouslySetInnerHTML).',
+    ],
+  },
+  {
     version: '1.3.0',
     date: '2026-07-13',
     tag: 'feat',
