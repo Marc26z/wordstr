@@ -57,7 +57,8 @@ export function BlogPostView({ event, naddr }: BlogPostViewProps) {
         day: 'numeric',
       });
 
-  const editNaddr = nip19.naddrEncode({
+  // unused variable suppressed — editNaddr is built inline in the dropdown
+  void nip19.naddrEncode({
     kind: KIND_BLOG_POST,
     pubkey: event.pubkey,
     identifier: getTag(event, 'd') ?? '',
@@ -108,7 +109,7 @@ export function BlogPostView({ event, naddr }: BlogPostViewProps) {
       <article className="max-w-4xl mx-auto px-4 py-10">
         {/* Hero image */}
         {image && (
-          <div className="mb-8 rounded-2xl overflow-hidden aspect-video">
+          <div className="mb-8 rounded-2xl overflow-hidden aspect-video w-full">
             <img
               src={image}
               alt={title}
@@ -171,38 +172,100 @@ export function BlogPostView({ event, naddr }: BlogPostViewProps) {
         {/* Divider */}
         <div className="border-t mb-8" />
 
-        {/* Markdown content — always dark mode styled */}
-        <div className="dark">
-          <div className="rounded-2xl bg-[#0d0a14] p-6 sm:p-10 shadow-xl shadow-purple-900/20">
-            {event.content ? (
-              <article className="prose prose-invert prose-purple max-w-none
-                prose-headings:font-extrabold prose-headings:tracking-tight
-                prose-h1:text-3xl prose-h1:mb-6
-                prose-h2:text-2xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:border-b prose-h2:border-white/10 prose-h2:pb-2
-                prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3
-                prose-p:leading-relaxed prose-p:text-white/85
-                prose-a:text-violet-400 prose-a:no-underline hover:prose-a:text-violet-300 hover:prose-a:underline
-                prose-strong:text-white prose-strong:font-semibold
-                prose-em:text-purple-200
-                prose-code:text-violet-300 prose-code:bg-white/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:before:content-none prose-code:after:content-none
-                prose-pre:bg-black/60 prose-pre:border prose-pre:border-white/10 prose-pre:rounded-xl prose-pre:p-5
-                prose-blockquote:border-l-violet-500 prose-blockquote:text-white/70 prose-blockquote:bg-white/5 prose-blockquote:py-1 prose-blockquote:rounded-r-lg
-                prose-img:rounded-xl prose-img:shadow-lg
-                prose-hr:border-white/10
-                prose-ul:text-white/85 prose-ol:text-white/85
-                prose-li:marker:text-purple-400
-                prose-table:text-sm
-                prose-th:text-white/90 prose-th:bg-white/10
-                prose-td:text-white/80
-              ">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {event.content}
-                </ReactMarkdown>
-              </article>
-            ) : (
-              <p className="text-white/40 italic">This post has no content.</p>
-            )}
-          </div>
+        {/* ── Markdown content — always dark, always white text ── */}
+        <div
+          className="rounded-2xl p-6 sm:p-10 shadow-xl"
+          style={{ background: '#0d0a14', boxShadow: '0 8px 40px rgba(109,40,217,0.15)' }}
+        >
+          {event.content ? (
+            <div
+              className="wordstr-blog-body"
+              style={{
+                color: '#f5f3ff',
+                fontSize: '1.0625rem',
+                lineHeight: '1.8',
+                fontFamily: 'inherit',
+              }}
+            >
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  h1: ({ children }) => (
+                    <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: 800, margin: '0 0 1.25rem', lineHeight: 1.2 }}>{children}</h1>
+                  ),
+                  h2: ({ children }) => (
+                    <h2 style={{ color: '#fff', fontSize: '1.5rem', fontWeight: 700, margin: '2.5rem 0 1rem', paddingBottom: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', lineHeight: 1.3 }}>{children}</h2>
+                  ),
+                  h3: ({ children }) => (
+                    <h3 style={{ color: '#e9d5ff', fontSize: '1.25rem', fontWeight: 700, margin: '2rem 0 0.75rem', lineHeight: 1.3 }}>{children}</h3>
+                  ),
+                  h4: ({ children }) => (
+                    <h4 style={{ color: '#ddd6fe', fontSize: '1.1rem', fontWeight: 600, margin: '1.5rem 0 0.5rem' }}>{children}</h4>
+                  ),
+                  p: ({ children }) => (
+                    <p style={{ color: '#ede9fe', margin: '0 0 1.25rem', lineHeight: 1.8 }}>{children}</p>
+                  ),
+                  a: ({ href, children }) => (
+                    <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: '#a78bfa', textDecoration: 'none' }}
+                      onMouseOver={e => (e.currentTarget.style.textDecoration = 'underline')}
+                      onMouseOut={e => (e.currentTarget.style.textDecoration = 'none')}
+                    >{children}</a>
+                  ),
+                  strong: ({ children }) => (
+                    <strong style={{ color: '#fff', fontWeight: 700 }}>{children}</strong>
+                  ),
+                  em: ({ children }) => (
+                    <em style={{ color: '#ddd6fe', fontStyle: 'italic' }}>{children}</em>
+                  ),
+                  code: ({ children, className }) => {
+                    const isBlock = className?.includes('language-');
+                    if (isBlock) return (
+                      <code style={{ color: '#c4b5fd', display: 'block' }}>{children}</code>
+                    );
+                    return (
+                      <code style={{ color: '#c4b5fd', background: 'rgba(255,255,255,0.08)', padding: '0.15em 0.4em', borderRadius: '4px', fontSize: '0.875em' }}>{children}</code>
+                    );
+                  },
+                  pre: ({ children }) => (
+                    <pre style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '1.25rem', overflowX: 'auto', margin: '1.5rem 0', fontSize: '0.875rem', lineHeight: 1.6 }}>{children}</pre>
+                  ),
+                  blockquote: ({ children }) => (
+                    <blockquote style={{ borderLeft: '3px solid #7c3aed', paddingLeft: '1rem', margin: '1.5rem 0', color: 'rgba(255,255,255,0.65)', background: 'rgba(255,255,255,0.04)', borderRadius: '0 8px 8px 0', padding: '0.75rem 1rem' }}>{children}</blockquote>
+                  ),
+                  ul: ({ children }) => (
+                    <ul style={{ color: '#ede9fe', paddingLeft: '1.5rem', margin: '1rem 0 1.25rem', listStyleType: 'disc' }}>{children}</ul>
+                  ),
+                  ol: ({ children }) => (
+                    <ol style={{ color: '#ede9fe', paddingLeft: '1.5rem', margin: '1rem 0 1.25rem', listStyleType: 'decimal' }}>{children}</ol>
+                  ),
+                  li: ({ children }) => (
+                    <li style={{ color: '#ede9fe', marginBottom: '0.35rem' }}>{children}</li>
+                  ),
+                  hr: () => (
+                    <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,0.1)', margin: '2.5rem 0' }} />
+                  ),
+                  img: ({ src, alt }) => (
+                    <img src={src} alt={alt ?? ''} style={{ borderRadius: '12px', maxWidth: '100%', margin: '1.5rem 0', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }} />
+                  ),
+                  table: ({ children }) => (
+                    <div style={{ overflowX: 'auto', margin: '1.5rem 0' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>{children}</table>
+                    </div>
+                  ),
+                  th: ({ children }) => (
+                    <th style={{ color: '#fff', background: 'rgba(255,255,255,0.08)', padding: '0.6rem 1rem', textAlign: 'left', fontWeight: 600, borderBottom: '1px solid rgba(255,255,255,0.15)' }}>{children}</th>
+                  ),
+                  td: ({ children }) => (
+                    <td style={{ color: '#ede9fe', padding: '0.6rem 1rem', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>{children}</td>
+                  ),
+                }}
+              >
+                {event.content}
+              </ReactMarkdown>
+            </div>
+          ) : (
+            <p style={{ color: 'rgba(255,255,255,0.35)', fontStyle: 'italic' }}>This post has no content.</p>
+          )}
         </div>
 
         {/* Author card */}

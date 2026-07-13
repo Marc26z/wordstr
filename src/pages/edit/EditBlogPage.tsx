@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useNostrPublish } from '@/hooks/useNostrPublish';
-import { CoverImagePicker } from '@/components/CoverImagePicker';
+import { HeroImageUploader } from '@/components/HeroImageUploader';
 import { KIND_BLOG_POST } from '@/hooks/useBlogs';
 import { ArrowLeft, Loader2, FileEdit, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
@@ -178,12 +178,7 @@ export function EditBlogPage() {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <CoverImagePicker
-            value={coverImage}
-            onChange={setCoverImage}
-            label="Cover Image"
-            aspectRatio="16/9"
-          />
+          <HeroImageUploader value={coverImage} onChange={setCoverImage} />
 
           <div className="space-y-2">
             <Label htmlFor="title">Title *</Label>

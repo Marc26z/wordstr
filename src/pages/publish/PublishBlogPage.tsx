@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useNostrPublish } from '@/hooks/useNostrPublish';
-import { CoverImagePicker } from '@/components/CoverImagePicker';
+import { HeroImageUploader } from '@/components/HeroImageUploader';
 import { LoginArea } from '@/components/auth/LoginArea';
 import { slugify } from '@/lib/pressstr';
 import { ArrowLeft, Loader2, FileEdit, Eye } from 'lucide-react';
@@ -128,13 +128,8 @@ export function PublishBlogPage() {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Cover image */}
-          <CoverImagePicker
-            value={coverImage}
-            onChange={setCoverImage}
-            label="Cover Image"
-            aspectRatio="16/9"
-          />
+          {/* Hero image — full width, uploads to Blossom */}
+          <HeroImageUploader value={coverImage} onChange={setCoverImage} />
 
           {/* Title */}
           <div className="space-y-2">

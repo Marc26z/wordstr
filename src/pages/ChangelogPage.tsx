@@ -15,6 +15,18 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: '1.4.1',
+    date: '2026-07-13',
+    tag: 'fix',
+    title: 'Blog post text is now always white; hero image uploads to Blossom',
+    items: [
+      'Fixed blog post body text: all paragraph, heading, list, blockquote, table, and code text is now explicitly white/violet on the dark background using inline styles — no longer dependent on Tailwind prose class generation.',
+      'Each Markdown element (h1–h4, p, a, strong, em, code, pre, blockquote, ul, ol, li, hr, img, table, th, td) is rendered with a custom component carrying guaranteed inline colour styles.',
+      'Replaced the small 2:3 CoverImagePicker with a new full-width HeroImageUploader on blog publish and edit forms.',
+      'HeroImageUploader is 16:9, full-width, drag-and-drop, with upload progress spinner, hover-to-replace overlay, and "Stored on Blossom" confirmation — uploads directly to all 5 Blossom mirror servers in parallel.',
+    ],
+  },
+  {
     version: '1.4.0',
     date: '2026-07-13',
     tag: 'feat',
