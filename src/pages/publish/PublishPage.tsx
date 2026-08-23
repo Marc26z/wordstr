@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Newspaper, BookOpen, FileText, ArrowLeft, FileEdit } from 'lucide-react';
+import { Newspaper, BookOpen, FileText, ArrowLeft, FileEdit, FileStack } from 'lucide-react';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { LoginArea } from '@/components/auth/LoginArea';
 
@@ -49,6 +49,23 @@ export function PublishPage() {
                   <h2 className="font-semibold text-lg">Blog Post</h2>
                   <p className="text-sm text-muted-foreground">
                     Write a long-form article in Markdown (NIP-23)
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          {/* Drafts */}
+          <Link to="/drafts">
+            <Card className="group hover:shadow-md hover:shadow-purple-500/10 transition-all duration-200 cursor-pointer border-2 hover:border-purple-500/50">
+              <CardContent className="p-6 flex items-center gap-4">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-100 to-fuchsia-100 dark:from-purple-900/30 dark:to-fuchsia-900/30 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                  <FileStack className="w-7 h-7 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div>
+                  <h2 className="font-semibold text-lg">Drafts</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Continue your saved blog post drafts
                   </p>
                 </div>
               </CardContent>

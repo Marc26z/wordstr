@@ -1,60 +1,57 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useNostrPublish } from '@/hooks/useNostrPublish';
-import { HeroImageUploader } from '@/components/HeroImageUploader';
 import { LoginArea } from '@/components/auth/LoginArea';
-import { slugify } from '@/lib/pressstr';
 import { blogPostUrl } from '@/lib/blogUrl';
-import { ArrowLeft, Loader2, FileEdit, Eye } from 'lucide-react';
+import { ArrowLeft, FileEdit } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 import { KIND_BLOG_POST } from '@/hooks/useBlogs';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-
-interface FormValues {
-  title: string;
-  summary: string;
-  topics: string;
-  content: string;
-}
+import { useBlogDrafts } from '@/hooks/useBlogDrafts';
+import { BlogPostEditor, type BlogDraftInput, type BlogFormValues } from '@/components/BlogPostEditor';
 
 export function PublishBlogPage() {
   const { user } = useCurrentUser();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const draftId = searchParams.get('draft') ?? undefined;
   const { mutateAsync: publishEvent } = useNostrPublish();
   const { toast } = useToast();
-  const [coverImage, setCoverImage] = useState('');
+  const { get, save, remove } = useBlogDrafts();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [editorTab, setEditorTab] = useState<'write' | 'preview'>('write');
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm<FormValues>({
-    defaultValues: { content: '' },
-  });
+  const draft = draftId ? get(draftId) : undefined;
 
-  const title = watch('title', '');
-  const content = watch('content', '');
+  // Notify when a requested draft cannot be found.
+  useEffect(() => {
+    if (draftId && draft === undefined) {
+      toast({
+        title: 'Draft not found',
+        description: 'The requested draft could not be loaded.',
+        variant: 'destructive',
+      });
+    }
+  }, [draftId, draft, toast]);
 
-  const onSubmit = async (values: FormValues) => {
+  const initialValues = draft
+    ? {
+        title: draft.title,
+        summary: draft.summary,
+        topics: draft.topics,
+        content: draft.content,
+        coverImage: draft.coverImage,
+      }
+    : undefined;
+
+  const handlePublish = async (values: BlogFormValues, dTag: string, coverImage: string) => {
     if (!user) return;
     setIsSubmitting(true);
     try {
-      const d = slugify(values.title) || `blog-${Date.now()}`;
       const now = Math.floor(Date.now() / 1000);
 
       const tags: string[][] = [
-        ['d', d],
+        ['d', dTag],
         ['title', values.title.trim()],
         ['published_at', String(now)],
         ['alt', `Blog post: ${values.title.trim()}`],
@@ -77,8 +74,13 @@ export function PublishBlogPage() {
         tags,
       });
 
+      // Remove any associated draft after successful publish.
+      if (draftId) {
+        remove(draftId);
+      }
+
       toast({ title: 'Blog post published!', description: values.title });
-      navigate(blogPostUrl(event.pubkey, d));
+      navigate(blogPostUrl(event.pubkey, dTag));
     } catch (err) {
       toast({
         title: 'Failed to publish',
@@ -87,6 +89,18 @@ export function PublishBlogPage() {
       });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleAutoSave = (input: BlogDraftInput) => {
+    if (!user) return;
+    const saved = save({
+      id: draftId,
+      ...input,
+    });
+    // Update the URL with the new draft id so a refresh doesn't lose it.
+    if (saved && saved.id !== draftId) {
+      navigate(`/publish/blog?draft=${saved.id}`, { replace: true });
     }
   };
 
@@ -116,116 +130,21 @@ export function PublishBlogPage() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold">New Blog Post</h1>
-            <p className="text-sm text-muted-foreground">Write a long-form article on Nostr (NIP-23)</p>
+            <h1 className="text-2xl font-bold">{draft ? 'Continue draft' : 'New Blog Post'}</h1>
+            <p className="text-sm text-muted-foreground">
+              {draft ? 'Your changes are saved automatically.' : 'Write a long-form article on Nostr (NIP-23)'}
+            </p>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Hero image — full width, uploads to Blossom */}
-          <HeroImageUploader value={coverImage} onChange={setCoverImage} />
-
-          {/* Title */}
-          <div className="space-y-2">
-            <Label htmlFor="title">Title *</Label>
-            <Input
-              id="title"
-              placeholder="Your blog post title"
-              className="text-lg font-medium"
-              {...register('title', { required: 'Title is required' })}
-            />
-            {errors.title && (
-              <p className="text-xs text-destructive">{errors.title.message}</p>
-            )}
-            {title && (
-              <p className="text-xs text-muted-foreground">
-                URL: <code className="bg-muted px-1 rounded">/blog/npub1…/{slugify(title) || '—'}</code>
-              </p>
-            )}
-          </div>
-
-          {/* Summary */}
-          <div className="space-y-2">
-            <Label htmlFor="summary">Summary / Subtitle</Label>
-            <Textarea
-              id="summary"
-              placeholder="A short description of this post (shown in previews)"
-              rows={2}
-              {...register('summary')}
-            />
-          </div>
-
-          {/* Topics */}
-          <div className="space-y-2">
-            <Label htmlFor="topics">Tags (comma-separated)</Label>
-            <Input
-              id="topics"
-              placeholder="bitcoin, nostr, tech"
-              {...register('topics')}
-            />
-          </div>
-
-          {/* Content editor with preview */}
-          <div className="space-y-2">
-            <Label>Content (Markdown) *</Label>
-            <Tabs value={editorTab} onValueChange={(v) => setEditorTab(v as 'write' | 'preview')}>
-              <TabsList className="mb-2">
-                <TabsTrigger value="write" className="gap-1.5 data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-                  <FileEdit className="w-3.5 h-3.5" />
-                  Write
-                </TabsTrigger>
-                <TabsTrigger value="preview" className="gap-1.5 data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-                  <Eye className="w-3.5 h-3.5" />
-                  Preview
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="write">
-                <Textarea
-                  placeholder={`# Your heading\n\nWrite your blog post in Markdown...\n\n## Section\n\nParagraphs, **bold**, _italic_, [links](https://nostr.com), and more.`}
-                  rows={20}
-                  className="font-mono text-sm resize-y min-h-[300px]"
-                  {...register('content', { required: 'Content is required' })}
-                />
-                {errors.content && (
-                  <p className="text-xs text-destructive mt-1">{errors.content.message}</p>
-                )}
-              </TabsContent>
-
-              <TabsContent value="preview">
-                <div className="min-h-[300px] rounded-md border bg-card p-4">
-                  {content ? (
-                    <article className="prose prose-sm prose-purple dark:prose-invert max-w-none">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
-                    </article>
-                  ) : (
-                    <p className="text-muted-foreground text-sm italic">
-                      Nothing to preview yet — switch to Write and add some content.
-                    </p>
-                  )}
-                </div>
-              </TabsContent>
-            </Tabs>
-          </div>
-
-          <Button
-            type="submit"
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Publishing…
-              </>
-            ) : (
-              <>
-                <FileEdit className="w-4 h-4 mr-2" />
-                Publish Blog Post
-              </>
-            )}
-          </Button>
-        </form>
+        <BlogPostEditor
+          initialValues={initialValues}
+          isSubmitting={isSubmitting}
+          submitLabel="Publish Blog Post"
+          onSubmit={handlePublish}
+          onAutoSave={handleAutoSave}
+          onManualSave={handleAutoSave}
+        />
       </div>
     </div>
   );

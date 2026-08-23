@@ -44,7 +44,10 @@ All four kinds are **addressable events** (kind range 30000–39999). Editing re
 - `src/components/BlogPostView.tsx` — Blog post detail: always-dark Markdown renderer, author card, NIP-22 comments.
 - `src/pages/BlogListPage.tsx` — Author profile page showing profile banner, avatar, bio, and all blog posts.
 - `src/pages/publish/PublishBlogPage.tsx` — Markdown editor with Write/Preview tabs for new blog posts.
-- `src/pages/edit/EditBlogPage.tsx` — Pre-filled edit form for existing blog posts.
+- `src/pages/edit/EditBlogPage.tsx` — Pre-filled edit form for existing blog posts with auto-saved local drafts.
+- `src/pages/DraftsPage.tsx` — Lists saved local blog post drafts with continue / delete actions.
+- `src/components/BlogPostEditor.tsx` — Shared Markdown editor, preview, hero image, and draft auto-save component.
+- `src/hooks/useBlogDrafts.ts` — localStorage draft CRUD scoped to the logged-in pubkey.
 - `src/pages/Index.tsx` — Home page with Magazines / Ebooks / Blogs tabs.
 - `src/pages/ChangelogPage.tsx` — Full release history at `/changelog`.
 - `src/pages/NIP19Page.tsx` — NIP-19 router: decodes naddr identifiers and renders the correct view.
@@ -68,7 +71,9 @@ All four kinds are **addressable events** (kind range 30000–39999). Editing re
 | `/edit/issue/:naddr` | Edit a magazine issue (owner only) |
 | `/edit/ebook/:naddr` | Edit an ebook (owner only) |
 | `/publish/blog` | Write a new NIP-23 blog post |
+| `/publish/blog?draft=<id>` | Continue writing a saved draft |
 | `/edit/blog/:naddr` | Edit a blog post (owner only) |
+| `/drafts` | Saved blog post drafts (localStorage, owner only) |
 | `/:nip19` | NIP-19 universal route: npub → author blog list; naddr → magazine/issue/ebook/blog |
 
 ## Nostr Event Kinds
@@ -135,7 +140,7 @@ The `LoginArea` component handles all login flows via `@nostrify/react/login`.
 
 See `/changelog` in the app or `src/pages/ChangelogPage.tsx` in the source for the full release history.
 
-Current version: **1.4.0**
+Current version: **1.5.0**
 
 ## Links
 

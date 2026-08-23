@@ -14,6 +14,7 @@ import { EditEbookPage } from "./pages/edit/EditEbookPage";
 import { EditBlogPage } from "./pages/edit/EditBlogPage";
 import { BlogPostPage } from "./pages/BlogPostPage";
 import { ChangelogPage } from "./pages/ChangelogPage";
+import { DraftsPage } from "./pages/DraftsPage";
 import NotFound from "./pages/NotFound";
 
 export function AppRouter() {
@@ -34,6 +35,7 @@ export function AppRouter() {
         <Route path="/edit/issue/:naddr" element={<EditIssuePage />} />
         <Route path="/edit/ebook/:naddr" element={<EditEbookPage />} />
         <Route path="/edit/blog/:naddr" element={<EditBlogPage />} />
+        <Route path="/drafts" element={<DraftsPage />} />
         {/* NIP-19 route for npub1, note1, naddr1, nevent1, nprofile1 */}
         <Route path="/:nip19" element={<NIP19Page />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

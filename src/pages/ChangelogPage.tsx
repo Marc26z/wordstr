@@ -15,6 +15,21 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: '1.5.0',
+    date: '2026-08-23',
+    tag: 'feat',
+    title: 'Blog drafts and improved post editing',
+    items: [
+      'New localStorage-based draft system for NIP-23 blog posts. Drafts are auto-saved as you write and scoped to your Nostr pubkey.',
+      'New /drafts page lists all saved drafts with continue, publish, and delete actions.',
+      'New BlogPostEditor shared component powers both the publish and edit forms with consistent Markdown preview, hero image, and draft saving.',
+      'New blog posts can be started from a draft via /publish/blog?draft=<id>. Published posts automatically delete their source draft.',
+      'Editing a published blog post now auto-saves a draft keyed to the post d-tag; the draft is cleaned up when the update is published.',
+      'Edit links are now visible on the author blog list page for each owned post, in addition to the existing post detail menu.',
+      'Drafts and Publish hub both link to the new drafts page for quick access.',
+    ],
+  },
+  {
     version: '1.4.2',
     date: '2026-07-13',
     tag: 'feat',

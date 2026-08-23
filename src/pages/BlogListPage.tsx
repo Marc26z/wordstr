@@ -9,13 +9,13 @@ import { useAuthor } from '@/hooks/useAuthor';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useAuthorBlogs } from '@/hooks/useBlogs';
 import { genUserName } from '@/lib/genUserName';
-import { ArrowLeft, Calendar, FileEdit, Globe, Plus, User } from 'lucide-react';
+import { ArrowLeft, Calendar, FileEdit, Globe, Pencil, Plus, User } from 'lucide-react';
 
 function getTag(event: NostrEvent, name: string): string | undefined {
   return event.tags.find(([n]) => n === name)?.[1];
 }
 
-function BlogCard({ event }: { event: NostrEvent }) {
+function BlogCard({ event, isOwner }: { event: NostrEvent; isOwner: boolean }) {
   const title = getTag(event, 'title') ?? 'Untitled';
   const image = getTag(event, 'image');
   const summary = getTag(event, 'summary');
@@ -24,6 +24,11 @@ function BlogCard({ event }: { event: NostrEvent }) {
   const dTag = getTag(event, 'd') ?? '';
 
   const postUrl = blogPostUrl(event.pubkey, dTag);
+  const editUrl = `/edit/blog/${nip19.naddrEncode({
+    kind: 30023,
+    pubkey: event.pubkey,
+    identifier: dTag,
+  })}`;
 
   const publishedDate = publishedAt
     ? new Date(Number(publishedAt) * 1000).toLocaleDateString(undefined, {
@@ -38,53 +43,69 @@ function BlogCard({ event }: { event: NostrEvent }) {
       });
 
   return (
-    <Link to={postUrl} className="group block">
-      <article className="flex flex-col sm:flex-row gap-4 rounded-2xl border bg-card hover:border-purple-400/60 hover:shadow-md hover:shadow-purple-500/10 transition-all duration-200 overflow-hidden p-0">
-        {/* Thumbnail */}
+    <article className="group flex flex-col sm:flex-row gap-4 rounded-2xl border bg-card hover:border-purple-400/60 hover:shadow-md hover:shadow-purple-500/10 transition-all duration-200 overflow-hidden p-0">
+      {/* Thumbnail */}
+      <Link to={postUrl} className="sm:w-44 sm:h-32 flex-shrink-0 block">
         {image ? (
-          <div className="sm:w-44 sm:h-32 flex-shrink-0 overflow-hidden">
+          <div className="h-40 sm:h-full overflow-hidden">
             <img
               src={image}
               alt={title}
-              className="w-full h-40 sm:h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           </div>
         ) : (
-          <div className="sm:w-44 sm:h-32 flex-shrink-0 bg-gradient-to-br from-violet-900/40 to-purple-800/40 flex items-center justify-center">
+          <div className="h-40 sm:h-full bg-gradient-to-br from-violet-900/40 to-purple-800/40 flex items-center justify-center">
             <FileEdit className="w-8 h-8 text-purple-500/50" />
           </div>
         )}
+      </Link>
 
-        {/* Content */}
-        <div className="flex-1 p-4 min-w-0 flex flex-col justify-between">
-          <div>
+      {/* Content */}
+      <div className="flex-1 p-4 min-w-0 flex flex-col justify-between">
+        <div>
+          <Link to={postUrl}>
             <h2 className="font-bold text-base sm:text-lg leading-snug mb-1.5 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors line-clamp-2">
               {title}
             </h2>
-            {summary && (
-              <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{summary}</p>
-            )}
-            {topics.length > 0 && (
-              <div className="flex flex-wrap gap-1 mb-2">
-                {topics.slice(0, 4).map((t) => (
-                  <Badge
-                    key={t}
-                    variant="secondary"
-                    className="text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 border-0"
-                  >
-                    {t}
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </div>
+          </Link>
+          {summary && (
+            <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{summary}</p>
+          )}
+          {topics.length > 0 && (
+            <div className="flex flex-wrap gap-1 mb-2">
+              {topics.slice(0, 4).map((t) => (
+                <Badge
+                  key={t}
+                  variant="secondary"
+                  className="text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 border-0"
+                >
+                  {t}
+                </Badge>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="flex items-center justify-between gap-3">
           <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Calendar className="w-3 h-3" />
             {publishedDate}
           </span>
+          {isOwner && (
+            <Link to={editUrl} onClick={(e) => e.stopPropagation()}>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-muted-foreground hover:text-purple-700 dark:hover:text-purple-300 gap-1.5 h-8"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                Edit
+              </Button>
+            </Link>
+          )}
         </div>
-      </article>
-    </Link>
+      </div>
+    </article>
   );
 }
 
@@ -215,7 +236,7 @@ export function BlogListPage({ pubkey }: BlogListPageProps) {
           ) : posts && posts.length > 0 ? (
             <div className="space-y-4">
               {posts.map((post) => (
-                <BlogCard key={post.id} event={post} />
+                <BlogCard key={post.id} event={post} isOwner={isOwner} />
               ))}
             </div>
           ) : (

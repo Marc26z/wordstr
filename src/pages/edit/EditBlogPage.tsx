@@ -1,37 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { nip19 } from 'nostr-tools';
 import { blogPostUrl } from '@/lib/blogUrl';
-import { useForm } from 'react-hook-form';
 import { useNostr } from '@nostrify/react';
 import { useQuery } from '@tanstack/react-query';
 import type { NostrEvent } from '@nostrify/nostrify';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useNostrPublish } from '@/hooks/useNostrPublish';
-import { HeroImageUploader } from '@/components/HeroImageUploader';
 import { KIND_BLOG_POST } from '@/hooks/useBlogs';
-import { ArrowLeft, Loader2, FileEdit, Eye } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
+import { useBlogDrafts } from '@/hooks/useBlogDrafts';
+import { BlogPostEditor, type BlogDraftInput, type BlogFormValues } from '@/components/BlogPostEditor';
 import NotFound from '@/pages/NotFound';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-
-interface FormValues {
-  title: string;
-  summary: string;
-  topics: string;
-  content: string;
-}
-
-function getTag(event: NostrEvent, name: string) {
-  return event.tags.find(([n]) => n === name)?.[1] ?? '';
-}
 
 export function EditBlogPage() {
   const { naddr } = useParams<{ naddr: string }>();
@@ -40,9 +23,9 @@ export function EditBlogPage() {
   const { nostr } = useNostr();
   const { mutateAsync: publishEvent } = useNostrPublish();
   const { toast } = useToast();
-  const [coverImage, setCoverImage] = useState('');
+  const { drafts, save, removeByDTag } = useBlogDrafts();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [editorTab, setEditorTab] = useState<'write' | 'preview'>('write');
+  const [usePublishedVersion, setUsePublishedVersion] = useState(false);
 
   // Decode the naddr to find the event
   let decoded: { kind: number; pubkey: string; identifier: string } | null = null;
@@ -66,38 +49,32 @@ export function EditBlogPage() {
     },
   });
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    reset,
-    formState: { errors },
-  } = useForm<FormValues>();
+  const draftForPost = useMemo(() => {
+    if (!decoded) return undefined;
+    return drafts.find((d) => d.dTag === decoded.identifier);
+  }, [drafts, decoded]);
 
-  const content = watch('content', '');
+  const hasNewerDraft = Boolean(
+    draftForPost && event && draftForPost.updatedAt > event.created_at * 1000,
+  );
+  const restoringDraft = hasNewerDraft && !usePublishedVersion;
 
-  // Pre-fill the form when the event loads
-  useEffect(() => {
-    if (event) {
-      reset({
-        title: getTag(event, 'title'),
-        summary: getTag(event, 'summary'),
-        topics: event.tags
-          .filter(([n]) => n === 't')
-          .map(([, v]) => v)
-          .join(', '),
-        content: event.content,
-      });
-      setCoverImage(getTag(event, 'image'));
-    }
-  }, [event, reset]);
+  const draftInitialValues = draftForPost
+    ? {
+        title: draftForPost.title,
+        summary: draftForPost.summary,
+        topics: draftForPost.topics,
+        content: draftForPost.content,
+        coverImage: draftForPost.coverImage,
+      }
+    : undefined;
 
-  const onSubmit = async (values: FormValues) => {
+  const handleUpdate = async (values: BlogFormValues, dTag: string, coverImage: string) => {
     if (!user || !event || !decoded) return;
     setIsSubmitting(true);
     try {
       const tags: string[][] = [
-        ['d', decoded.identifier],
+        ['d', dTag],
         ['title', values.title.trim()],
         ['published_at', getTag(event, 'published_at') || String(Math.floor(Date.now() / 1000))],
         ['alt', `Blog post: ${values.title.trim()}`],
@@ -114,14 +91,17 @@ export function EditBlogPage() {
         tags.push(['t', t]);
       }
 
-      const updated = await publishEvent({
+      await publishEvent({
         kind: KIND_BLOG_POST,
         content: values.content.trim(),
         tags,
       });
 
+      // Remove any draft tied to this post after a successful update.
+      removeByDTag(dTag);
+
       toast({ title: 'Post updated!', description: values.title });
-      navigate(blogPostUrl(updated.pubkey, decoded.identifier));
+      navigate(blogPostUrl(decoded.pubkey, dTag));
     } catch (err) {
       toast({
         title: 'Failed to update',
@@ -131,6 +111,15 @@ export function EditBlogPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleAutoSave = (input: BlogDraftInput) => {
+    if (!user || !decoded) return;
+    save({
+      id: draftForPost?.id,
+      dTag: decoded.identifier,
+      ...input,
+    });
   };
 
   if (!naddr || !decoded) return <NotFound />;
@@ -161,7 +150,7 @@ export function EditBlogPage() {
     <div className="min-h-screen bg-background">
       <div className="max-w-3xl mx-auto px-4 py-8">
         <div className="flex items-center gap-3 mb-8">
-          <Link to={decoded ? blogPostUrl(decoded.pubkey, decoded.identifier) : '/'}>
+          <Link to={blogPostUrl(decoded.pubkey, decoded.identifier)}>
             <Button variant="ghost" size="sm">
               <ArrowLeft className="w-4 h-4" />
             </Button>
@@ -172,87 +161,43 @@ export function EditBlogPage() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <HeroImageUploader value={coverImage} onChange={setCoverImage} />
-
-          <div className="space-y-2">
-            <Label htmlFor="title">Title *</Label>
-            <Input
-              id="title"
-              className="text-lg font-medium"
-              {...register('title', { required: 'Title is required' })}
-            />
-            {errors.title && (
-              <p className="text-xs text-destructive">{errors.title.message}</p>
-            )}
+        {hasNewerDraft && draftForPost && (
+          <div className="mb-6 rounded-xl border border-purple-200 bg-purple-50 dark:border-purple-900 dark:bg-purple-900/20 p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+            <p className="text-sm flex-1">
+              <span className="font-medium">A newer local draft was found</span>{' '}
+              <span className="text-muted-foreground">
+                for this post (saved {new Date(draftForPost.updatedAt).toLocaleString()}).
+              </span>
+            </p>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="border-purple-300 text-purple-700 hover:bg-white dark:border-purple-700 dark:text-purple-300 dark:hover:bg-purple-900/40"
+              onClick={() => setUsePublishedVersion((v) => !v)}
+            >
+              {usePublishedVersion ? 'Restore draft' : 'Use published version'}
+            </Button>
           </div>
+        )}
 
-          <div className="space-y-2">
-            <Label htmlFor="summary">Summary / Subtitle</Label>
-            <Textarea id="summary" rows={2} {...register('summary')} />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="topics">Tags (comma-separated)</Label>
-            <Input id="topics" placeholder="bitcoin, nostr, tech" {...register('topics')} />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Content (Markdown) *</Label>
-            <Tabs value={editorTab} onValueChange={(v) => setEditorTab(v as 'write' | 'preview')}>
-              <TabsList className="mb-2">
-                <TabsTrigger value="write" className="gap-1.5 data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-                  <FileEdit className="w-3.5 h-3.5" />
-                  Write
-                </TabsTrigger>
-                <TabsTrigger value="preview" className="gap-1.5 data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-                  <Eye className="w-3.5 h-3.5" />
-                  Preview
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="write">
-                <Textarea
-                  rows={20}
-                  className="font-mono text-sm resize-y min-h-[300px]"
-                  {...register('content', { required: 'Content is required' })}
-                />
-                {errors.content && (
-                  <p className="text-xs text-destructive mt-1">{errors.content.message}</p>
-                )}
-              </TabsContent>
-              <TabsContent value="preview">
-                <div className="min-h-[300px] rounded-md border bg-card p-4">
-                  {content ? (
-                    <article className="prose prose-sm prose-purple dark:prose-invert max-w-none">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
-                    </article>
-                  ) : (
-                    <p className="text-muted-foreground text-sm italic">Nothing to preview yet.</p>
-                  )}
-                </div>
-              </TabsContent>
-            </Tabs>
-          </div>
-
-          <Button
-            type="submit"
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Saving…
-              </>
-            ) : (
-              <>
-                <FileEdit className="w-4 h-4 mr-2" />
-                Save Changes
-              </>
-            )}
-          </Button>
-        </form>
+        <BlogPostEditor
+          key={restoringDraft ? 'draft' : 'published'}
+          event={event}
+          identifier={decoded.identifier}
+          initialValues={restoringDraft ? draftInitialValues : undefined}
+          prefillFromEvent={!restoringDraft}
+          isSubmitting={isSubmitting}
+          submitLabel="Save Changes"
+          onSubmit={handleUpdate}
+          onAutoSave={handleAutoSave}
+          onManualSave={handleAutoSave}
+        />
       </div>
     </div>
   );
+}
+
+function getTag(event: NostrEvent | undefined, name: string): string {
+  return event?.tags.find(([n]) => n === name)?.[1] ?? '';
 }

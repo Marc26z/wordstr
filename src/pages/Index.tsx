@@ -15,7 +15,7 @@ import { blogPostUrl } from '@/lib/blogUrl';
 import { useAuthor } from '@/hooks/useAuthor';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { genUserName } from '@/lib/genUserName';
-import { BookOpen, Newspaper, Plus, PenLine, Sparkles, FileEdit, Calendar, User } from 'lucide-react';
+import { BookOpen, Newspaper, Plus, PenLine, Sparkles, FileEdit, Calendar, User, FileStack } from 'lucide-react';
 import { APP_VERSION } from '@/lib/version';
 
 function getTag(event: NostrEvent, name: string): string | undefined {
@@ -157,16 +157,28 @@ const Index = () => {
 
           <div className="flex items-center gap-2">
             {user && (
-              <Link to="/publish">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="border-purple-300 text-purple-700 hover:bg-purple-50 hover:border-purple-400 dark:border-purple-700 dark:text-purple-300 dark:hover:bg-purple-900/30"
-                >
-                  <Plus className="w-4 h-4 mr-1.5" />
-                  <span className="hidden sm:inline">Publish</span>
-                </Button>
-              </Link>
+              <>
+                <Link to="/drafts">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-muted-foreground hover:text-foreground hover:bg-purple-50 dark:hover:bg-purple-900/30"
+                  >
+                    <FileStack className="w-4 h-4 mr-1.5" />
+                    <span className="hidden sm:inline">Drafts</span>
+                  </Button>
+                </Link>
+                <Link to="/publish">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-purple-300 text-purple-700 hover:bg-purple-50 hover:border-purple-400 dark:border-purple-700 dark:text-purple-300 dark:hover:bg-purple-900/30"
+                  >
+                    <Plus className="w-4 h-4 mr-1.5" />
+                    <span className="hidden sm:inline">Publish</span>
+                  </Button>
+                </Link>
+              </>
             )}
             <LoginArea className="max-w-52" />
           </div>
