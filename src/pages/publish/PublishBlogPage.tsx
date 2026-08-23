@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useNostrPublish } from '@/hooks/useNostrPublish';
 import { LoginArea } from '@/components/auth/LoginArea';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { blogPostUrl } from '@/lib/blogUrl';
 import { ArrowLeft, FileEdit } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
@@ -129,12 +130,13 @@ export function PublishBlogPage() {
               <ArrowLeft className="w-4 h-4" />
             </Button>
           </Link>
-          <div>
+          <div className="flex-1">
             <h1 className="text-2xl font-bold">{draft ? 'Continue draft' : 'New Blog Post'}</h1>
             <p className="text-sm text-muted-foreground">
               {draft ? 'Your changes are saved automatically.' : 'Write a long-form article on Nostr (NIP-23)'}
             </p>
           </div>
+          <ThemeToggle />
         </div>
 
         <BlogPostEditor

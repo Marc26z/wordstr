@@ -9,6 +9,7 @@ import { useAuthor } from '@/hooks/useAuthor';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useAuthorBlogs } from '@/hooks/useBlogs';
 import { genUserName } from '@/lib/genUserName';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { ArrowLeft, Calendar, FileEdit, Globe, Pencil, Plus, User } from 'lucide-react';
 
 function getTag(event: NostrEvent, name: string): string | undefined {
@@ -140,6 +141,7 @@ export function BlogListPage({ pubkey }: BlogListPageProps) {
           </Link>
           <span className="text-sm text-muted-foreground font-medium truncate">{authorName}</span>
           <div className="flex-1" />
+          <ThemeToggle />
           {isOwner && (
             <Link to="/publish/blog">
               <Button

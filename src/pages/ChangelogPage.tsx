@@ -3,6 +3,7 @@ import { useSeoMeta } from '@unhead/react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, BookOpen } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { APP_VERSION } from '@/lib/version';
 
 interface Release {
@@ -14,6 +15,18 @@ interface Release {
 }
 
 const RELEASES: Release[] = [
+  {
+    version: '1.6.0',
+    date: '2026-08-23',
+    tag: 'feat',
+    title: 'Dark mode by default with a light theme toggle',
+    items: [
+      'The app now defaults to dark mode.',
+      'New ThemeToggle component switches between dark and light themes and is available from every major page header.',
+      'Blog post Markdown rendering is now theme-aware: dark mode keeps the rich violet-on-black reader experience, light mode uses readable muted text on the card background.',
+      'Theme preference is persisted in the existing app config (localStorage).',
+    ],
+  },
   {
     version: '1.5.0',
     date: '2026-08-23',
@@ -229,6 +242,7 @@ export function ChangelogPage() {
           <span className="text-muted-foreground text-sm">/</span>
           <span className="text-sm font-medium">Changelog</span>
           <div className="flex-1" />
+          <ThemeToggle />
           <span className="text-xs text-muted-foreground font-mono">v{APP_VERSION}</span>
         </div>
       </div>

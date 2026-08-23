@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Newspaper, BookOpen, FileText, ArrowLeft, FileEdit, FileStack } from 'lucide-react';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { LoginArea } from '@/components/auth/LoginArea';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export function PublishPage() {
   const { user } = useCurrentUser();
@@ -31,10 +32,11 @@ export function PublishPage() {
               <ArrowLeft className="w-4 h-4" />
             </Button>
           </Link>
-          <div>
+          <div className="flex-1">
             <h1 className="text-2xl font-bold">Publish</h1>
             <p className="text-sm text-muted-foreground">Share your publications on Nostr</p>
           </div>
+          <ThemeToggle />
         </div>
 
         <div className="grid gap-4">

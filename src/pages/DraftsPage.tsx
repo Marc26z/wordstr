@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LoginArea } from '@/components/auth/LoginArea';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { useBlogDrafts, type BlogDraft } from '@/hooks/useBlogDrafts';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { ArrowLeft, BookOpen, Clock, FileEdit, Plus, Trash2 } from 'lucide-react';
@@ -146,6 +147,8 @@ export function DraftsPage() {
           </Link>
           <span className="text-muted-foreground text-sm">/</span>
           <span className="text-sm font-medium">Drafts</span>
+          <div className="flex-1" />
+          <ThemeToggle />
         </div>
       </div>
 

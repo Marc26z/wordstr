@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LoginArea } from '@/components/auth/LoginArea';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { MagazineCard, EbookCard } from '@/components/PublicationCard';
 import { useMagazines, useEbooks } from '@/hooks/useMagazines';
 import { useBlogs } from '@/hooks/useBlogs';
@@ -180,6 +181,7 @@ const Index = () => {
                 </Link>
               </>
             )}
+            <ThemeToggle />
             <LoginArea className="max-w-52" />
           </div>
         </div>
