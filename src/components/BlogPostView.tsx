@@ -17,6 +17,7 @@ import { ArrowLeft, Calendar, MoreHorizontal, Pencil, User } from 'lucide-react'
 import { DeleteEventButton } from '@/components/DeleteEventButton';
 import { CommentsSection } from '@/components/comments/CommentsSection';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { PromoVideo } from '@/components/PromoVideo';
 import { KIND_BLOG_POST } from '@/hooks/useBlogs';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -37,6 +38,7 @@ export function BlogPostView({ event, naddr }: BlogPostViewProps) {
   const title = getTag(event, 'title') ?? 'Untitled';
   const image = getTag(event, 'image');
   const summary = getTag(event, 'summary');
+  const promoVideo = getTag(event, 'video');
   const publishedAt = getTag(event, 'published_at');
   const topics = event.tags.filter(([n]) => n === 't').map(([, v]) => v);
 
@@ -111,6 +113,13 @@ export function BlogPostView({ event, naddr }: BlogPostViewProps) {
               alt={title}
               className="w-full h-full object-cover"
             />
+          </div>
+        )}
+
+        {/* Promo video */}
+        {promoVideo && (
+          <div className="mb-8">
+            <PromoVideo url={promoVideo} />
           </div>
         )}
 

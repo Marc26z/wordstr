@@ -17,6 +17,7 @@ export interface BlogFormValues {
   summary: string;
   topics: string;
   content: string;
+  promoVideo: string;
 }
 
 export interface BlogDraftInput {
@@ -25,6 +26,7 @@ export interface BlogDraftInput {
   topics: string;
   content: string;
   coverImage: string;
+  promoVideo: string;
 }
 
 interface BlogPostEditorProps {
@@ -92,6 +94,7 @@ export function BlogPostEditor({
       summary: initialValues?.summary ?? '',
       topics: initialValues?.topics ?? '',
       content: initialValues?.content ?? '',
+      promoVideo: initialValues?.promoVideo ?? '',
     },
   });
 
@@ -99,6 +102,7 @@ export function BlogPostEditor({
   const summary = watch('summary', '');
   const topics = watch('topics', '');
   const content = watch('content', '');
+  const promoVideo = watch('promoVideo', '');
 
   // Keep cover image in sync if initialValues changes (e.g. draft load).
   useEffect(() => {
@@ -118,6 +122,7 @@ export function BlogPostEditor({
           .map(([, v]) => v)
           .join(', '),
         content: event.content,
+        promoVideo: getTag(event, 'video'),
       });
       setCoverImage(getTag(event, 'image'));
     }
@@ -137,6 +142,7 @@ export function BlogPostEditor({
       topics,
       content,
       coverImage,
+      promoVideo,
     };
 
     if (!hasDraftableContent(draft)) return;
@@ -151,7 +157,7 @@ export function BlogPostEditor({
         clearTimeout(autoSaveTimeoutRef.current);
       }
     };
-  }, [title, summary, topics, content, coverImage, onAutoSave]);
+  }, [title, summary, topics, content, coverImage, promoVideo, onAutoSave]);
 
   const handleFormSubmit = (values: BlogFormValues) => {
     const dTag = identifier ?? (slugify(values.title) || `blog-${Date.now()}`);
@@ -165,6 +171,7 @@ export function BlogPostEditor({
       topics,
       content,
       coverImage,
+      promoVideo,
     });
     setAutoSavedAt(Date.now());
   };
@@ -207,6 +214,21 @@ export function BlogPostEditor({
           id="topics"
           placeholder="bitcoin, nostr, tech"
           {...register('topics')}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="promoVideo">
+          Promo Video
+          <span className="ml-2 text-xs font-normal text-muted-foreground">
+            Paste a Divine video link (e.g. https://divine.video/video/…)
+          </span>
+        </Label>
+        <Input
+          id="promoVideo"
+          type="url"
+          placeholder="https://divine.video/video/abc123…"
+          {...register('promoVideo')}
         />
       </div>
 

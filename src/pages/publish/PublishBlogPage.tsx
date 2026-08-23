@@ -42,6 +42,7 @@ export function PublishBlogPage() {
         topics: draft.topics,
         content: draft.content,
         coverImage: draft.coverImage,
+        promoVideo: draft.promoVideo,
       }
     : undefined;
 
@@ -60,6 +61,7 @@ export function PublishBlogPage() {
 
       if (coverImage) tags.push(['image', coverImage]);
       if (values.summary.trim()) tags.push(['summary', values.summary.trim()]);
+      if (values.promoVideo.trim()) tags.push(['video', values.promoVideo.trim()]);
 
       const topicList = values.topics
         .split(',')

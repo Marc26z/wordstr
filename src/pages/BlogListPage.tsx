@@ -10,6 +10,7 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useAuthorBlogs } from '@/hooks/useBlogs';
 import { genUserName } from '@/lib/genUserName';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { PromoVideo } from '@/components/PromoVideo';
 import { ArrowLeft, Calendar, FileEdit, Globe, Pencil, Plus, User } from 'lucide-react';
 
 function getTag(event: NostrEvent, name: string): string | undefined {
@@ -20,6 +21,7 @@ function BlogCard({ event, isOwner }: { event: NostrEvent; isOwner: boolean }) {
   const title = getTag(event, 'title') ?? 'Untitled';
   const image = getTag(event, 'image');
   const summary = getTag(event, 'summary');
+  const promoVideo = getTag(event, 'video');
   const publishedAt = getTag(event, 'published_at');
   const topics = event.tags.filter(([n]) => n === 't').map(([, v]) => v);
   const dTag = getTag(event, 'd') ?? '';
@@ -44,23 +46,31 @@ function BlogCard({ event, isOwner }: { event: NostrEvent; isOwner: boolean }) {
       });
 
   return (
-    <article className="group flex flex-col sm:flex-row gap-4 rounded-2xl border bg-card hover:border-purple-400/60 hover:shadow-md hover:shadow-purple-500/10 transition-all duration-200 overflow-hidden p-0">
-      {/* Thumbnail */}
-      <Link to={postUrl} className="sm:w-44 sm:h-32 flex-shrink-0 block">
-        {image ? (
-          <div className="h-40 sm:h-full overflow-hidden">
-            <img
-              src={image}
-              alt={title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-          </div>
-        ) : (
-          <div className="h-40 sm:h-full bg-gradient-to-br from-violet-900/40 to-purple-800/40 flex items-center justify-center">
-            <FileEdit className="w-8 h-8 text-purple-500/50" />
-          </div>
-        )}
-      </Link>
+    <article className="group rounded-2xl border bg-card hover:border-purple-400/60 hover:shadow-md hover:shadow-purple-500/10 transition-all duration-200 overflow-hidden p-0">
+      {/* Promo video — shown on top of the blog post card */}
+      {promoVideo && (
+        <div className="border-b">
+          <PromoVideo url={promoVideo} />
+        </div>
+      )}
+
+      <div className="flex flex-col sm:flex-row gap-4">
+        {/* Thumbnail */}
+        <Link to={postUrl} className="sm:w-44 sm:h-32 flex-shrink-0 block">
+          {image ? (
+            <div className="h-40 sm:h-full overflow-hidden">
+              <img
+                src={image}
+                alt={title}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+          ) : (
+            <div className="h-40 sm:h-full bg-gradient-to-br from-violet-900/40 to-purple-800/40 flex items-center justify-center">
+              <FileEdit className="w-8 h-8 text-purple-500/50" />
+            </div>
+          )}
+        </Link>
 
       {/* Content */}
       <div className="flex-1 p-4 min-w-0 flex flex-col justify-between">
@@ -105,6 +115,7 @@ function BlogCard({ event, isOwner }: { event: NostrEvent; isOwner: boolean }) {
             </Link>
           )}
         </div>
+      </div>
       </div>
     </article>
   );

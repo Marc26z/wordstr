@@ -67,6 +67,7 @@ export function EditBlogPage() {
         topics: draftForPost.topics,
         content: draftForPost.content,
         coverImage: draftForPost.coverImage,
+        promoVideo: draftForPost.promoVideo,
       }
     : undefined;
 
@@ -83,6 +84,7 @@ export function EditBlogPage() {
 
       if (coverImage) tags.push(['image', coverImage]);
       if (values.summary.trim()) tags.push(['summary', values.summary.trim()]);
+      if (values.promoVideo.trim()) tags.push(['video', values.promoVideo.trim()]);
 
       const topicList = values.topics
         .split(',')

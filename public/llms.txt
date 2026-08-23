@@ -41,7 +41,8 @@ All four kinds are **addressable events** (kind range 30000–39999). Editing re
 - `src/components/EbookView.tsx` — Ebook detail page (cover, metadata, download, NIP-22 comments section).
 - `src/components/comments/CommentsSection.tsx` — NIP-22 threaded comment renderer.
 - `src/hooks/useBlogs.ts` — TanStack Query hooks: `useBlogs` (global feed), `useAuthorBlogs` (by pubkey), `useBlogPost` (single by pubkey+d). Exports `KIND_BLOG_POST = 30023`.
-- `src/components/BlogPostView.tsx` — Blog post detail: theme-aware Markdown renderer, author card, NIP-22 comments.
+- `src/components/BlogPostView.tsx` — Blog post detail: theme-aware Markdown renderer, promo video, author card, NIP-22 comments.
+- `src/components/PromoVideo.tsx` — Resolves Divine video links (kind 34236) and plays them inline.
 - `src/components/ThemeToggle.tsx` — Sun/Moon button to switch between dark and light modes.
 - `src/hooks/useTheme.ts` — Read/set the active theme via AppContext.
 - `src/pages/BlogListPage.tsx` — Author profile page showing profile banner, avatar, bio, and all blog posts.
@@ -142,7 +143,7 @@ The `LoginArea` component handles all login flows via `@nostrify/react/login`.
 
 See `/changelog` in the app or `src/pages/ChangelogPage.tsx` in the source for the full release history.
 
-Current version: **1.6.0**
+Current version: **1.7.0**
 
 ## Links
 

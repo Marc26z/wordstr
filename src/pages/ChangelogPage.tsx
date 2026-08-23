@@ -16,6 +16,19 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: '1.7.0',
+    date: '2026-08-23',
+    tag: 'feat',
+    title: 'Promotional videos for blog posts',
+    items: [
+      'Blog posts can now include a promotional video via a new "Promo Video" field on the publish and edit forms.',
+      'Paste a Divine video page link (https://divine.video/video/…) or a direct video URL; the URL is stored in a `video` tag on the kind 30023 event.',
+      'Divine links are resolved from the kind 34236 event on the Divine relay and played inline with a native HTML5 video player.',
+      'The promo video appears at the top of the blog post page and on the author profile blog cards.',
+      'Local drafts now also save the promo video URL.',
+    ],
+  },
+  {
     version: '1.6.0',
     date: '2026-08-23',
     tag: 'feat',

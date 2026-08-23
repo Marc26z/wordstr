@@ -21,6 +21,8 @@ export interface BlogDraft {
   content: string;
   /** Blossom URL of the hero/cover image. */
   coverImage: string;
+  /** Optional Divine video URL for the promotional video. */
+  promoVideo: string;
   /** Unix timestamp when the draft was first created. */
   createdAt: number;
   /** Unix timestamp when the draft was last updated. */
