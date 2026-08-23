@@ -16,6 +16,15 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: '1.9.2',
+    date: '2026-08-23',
+    tag: 'fix',
+    title: 'Hero h1 lowercased to "wordstr"',
+    items: [
+      'The homepage hero heading now reads "wordstr" in lowercase. It is split across two styled spans ("word" in purple, "str" in white), so it was missed by the v1.9.1 find-and-replace.',
+    ],
+  },
+  {
     version: '1.9.1',
     date: '2026-08-23',
     tag: 'feat',

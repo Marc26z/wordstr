@@ -209,9 +209,9 @@ const Index = () => {
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white mb-4 leading-tight">
             <span className="text-purple-400">
-              Word
+              word
             </span>
-            <span className="text-white">Str</span>
+            <span className="text-white">str</span>
           </h1>
           <p className="text-base sm:text-lg text-white/70 mb-8 max-w-xl mx-auto leading-relaxed">
             Publish and discover magazines, periodicals, ebooks, and blog posts on the open Nostr network.
