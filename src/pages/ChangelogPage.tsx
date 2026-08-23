@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useSeoMeta } from '@unhead/react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, BookOpen } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { APP_VERSION } from '@/lib/version';
 
@@ -15,6 +15,16 @@ interface Release {
 }
 
 const RELEASES: Release[] = [
+  {
+    version: '1.8.0',
+    date: '2026-08-23',
+    tag: 'feat',
+    title: 'New hand-painted WordStr logo',
+    items: [
+      'The site header now shows the new hand-painted "wordstr" logo artwork, replacing the purple gradient icon and gradient wordmark.',
+      'Logo updated on the homepage navbar and the Drafts and Changelog page headers; the artwork is served from /wordstr-logo.jpg.',
+    ],
+  },
   {
     version: '1.7.0',
     date: '2026-08-23',
@@ -247,10 +257,11 @@ export function ChangelogPage() {
             </Button>
           </Link>
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-violet-600 to-purple-800 flex items-center justify-center shadow-sm shadow-purple-500/20">
-              <BookOpen className="w-3.5 h-3.5 text-white" />
-            </div>
-            <span className="font-extrabold tracking-tight bg-gradient-to-r from-violet-600 to-purple-500 bg-clip-text text-transparent">WordStr</span>
+            <img
+              src="/wordstr-logo.jpg"
+              alt="WordStr"
+              className="h-6 w-auto rounded"
+            />
           </Link>
           <span className="text-muted-foreground text-sm">/</span>
           <span className="text-sm font-medium">Changelog</span>

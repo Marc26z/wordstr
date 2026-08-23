@@ -7,7 +7,7 @@ import { LoginArea } from '@/components/auth/LoginArea';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useBlogDrafts, type BlogDraft } from '@/hooks/useBlogDrafts';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { ArrowLeft, BookOpen, Clock, FileEdit, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Clock, FileEdit, Plus, Trash2 } from 'lucide-react';
 
 function formatDraftDate(ts: number): string {
   return new Date(ts).toLocaleDateString(undefined, {
@@ -138,12 +138,11 @@ export function DraftsPage() {
             </Button>
           </Link>
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-violet-600 to-purple-800 flex items-center justify-center shadow-sm shadow-purple-500/20">
-              <BookOpen className="w-3.5 h-3.5 text-white" />
-            </div>
-            <span className="font-extrabold tracking-tight bg-gradient-to-r from-violet-600 to-purple-500 bg-clip-text text-transparent">
-              WordStr
-            </span>
+            <img
+              src="/wordstr-logo.jpg"
+              alt="WordStr"
+              className="h-6 w-auto rounded"
+            />
           </Link>
           <span className="text-muted-foreground text-sm">/</span>
           <span className="text-sm font-medium">Drafts</span>

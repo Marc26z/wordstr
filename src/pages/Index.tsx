@@ -148,12 +148,11 @@ const Index = () => {
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border/60 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
           <Link to="/" className="flex items-center gap-2 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-purple-800 flex items-center justify-center flex-shrink-0 shadow-md shadow-purple-500/20">
-              <BookOpen className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-violet-600 to-purple-500 bg-clip-text text-transparent">
-              WordStr
-            </span>
+            <img
+              src="/wordstr-logo.jpg"
+              alt="WordStr"
+              className="h-9 w-auto rounded-md shadow-sm"
+            />
           </Link>
 
           <div className="flex items-center gap-2">
