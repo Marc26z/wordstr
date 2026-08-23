@@ -16,6 +16,15 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: '1.9.1',
+    date: '2026-08-23',
+    tag: 'feat',
+    title: 'Brand name lowercased to "wordstr"',
+    items: [
+      'All instances of "WordStr" are now lowercase "wordstr": page titles, Open Graph and Twitter meta tags, web app manifest, logo alt text, footer, and page copy.',
+    ],
+  },
+  {
     version: '1.9.0',
     date: '2026-08-23',
     tag: 'feat',
@@ -31,7 +40,7 @@ const RELEASES: Release[] = [
     version: '1.8.0',
     date: '2026-08-23',
     tag: 'feat',
-    title: 'New hand-painted WordStr logo',
+    title: 'New hand-painted wordstr logo',
     items: [
       'The site header now shows the new hand-painted "wordstr" logo artwork, replacing the purple gradient icon and gradient wordmark.',
       'Logo updated on the homepage navbar and the Drafts and Changelog page headers; the artwork is served from /wordstr-logo.jpg.',
@@ -124,12 +133,12 @@ const RELEASES: Release[] = [
     version: '1.3.0',
     date: '2026-07-13',
     tag: 'feat',
-    title: 'Rebranded to WordStr with black, purple & white theme',
+    title: 'Rebranded to wordstr with black, purple & white theme',
     items: [
-      'Application renamed from PressStr to WordStr across all pages, meta tags, manifests, and documentation.',
+      'Application renamed from PressStr to wordstr across all pages, meta tags, manifests, and documentation.',
       'New black × purple × white colour scheme: rich violet primary (#7c3aed), near-black backgrounds in dark mode, crisp white in light mode.',
       'Hero section redesigned with a dark gradient (black → purple), dot-grid overlay, animated glow blobs, and gradient headline.',
-      'Navbar logo updated: purple gradient icon with gradient "WordStr" wordmark.',
+      'Navbar logo updated: purple gradient icon with gradient "wordstr" wordmark.',
       'Tab active state now uses purple-600 pill.',
       'Empty-state cards use purple-tinted dashed borders and purple icon backgrounds.',
       'Publish hub cards restyled with purple/violet/fuchsia icon badges.',
@@ -254,8 +263,8 @@ const tagLabels: Record<Release['tag'], string> = {
 
 export function ChangelogPage() {
   useSeoMeta({
-    title: `Changelog — WordStr v${APP_VERSION}`,
-    description: 'Full release history for WordStr, the decentralised magazine and ebook platform on Nostr.',
+    title: `Changelog — wordstr v${APP_VERSION}`,
+    description: 'Full release history for wordstr, the decentralised magazine and ebook platform on Nostr.',
   });
 
   return (
@@ -271,7 +280,7 @@ export function ChangelogPage() {
           <Link to="/" className="flex items-center gap-2">
             <img
               src="/wordstr-logo.jpg"
-              alt="WordStr"
+              alt="wordstr"
               className="h-6 w-auto rounded"
             />
           </Link>
@@ -287,7 +296,7 @@ export function ChangelogPage() {
         <div className="mb-10">
           <h1 className="text-3xl font-bold mb-2">Changelog</h1>
           <p className="text-muted-foreground">
-            All notable changes to WordStr, in reverse-chronological order.
+            All notable changes to wordstr, in reverse-chronological order.
           </p>
         </div>
 
@@ -343,12 +352,12 @@ export function ChangelogPage() {
         {/* Footer note */}
         <div className="mt-16 pt-8 border-t text-center text-sm text-muted-foreground">
           <p>
-            WordStr is open-source and built on{' '}
+            wordstr is open-source and built on{' '}
             <a href="https://nostr.com" target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 transition-colors">Nostr</a>.{' '}
             <a href="https://shakespeare.diy" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Vibed with Shakespeare</a>.
           </p>
           <p className="mt-1">
-            <Link to="/" className="hover:text-foreground transition-colors">← Back to WordStr</Link>
+            <Link to="/" className="hover:text-foreground transition-colors">← Back to wordstr</Link>
           </p>
         </div>
       </div>

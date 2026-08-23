@@ -1,2 +1,2 @@
-/** Current WordStr application version. Update this on every release. */
-export const APP_VERSION = '1.9.0';
+/** Current wordstr application version. Update this on every release. */
+export const APP_VERSION = '1.9.1';

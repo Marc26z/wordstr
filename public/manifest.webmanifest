@@ -1,6 +1,6 @@
 {
-  "name": "WordStr",
-  "short_name": "WordStr",
+  "name": "wordstr",
+  "short_name": "wordstr",
   "description": "Publish and discover magazines, periodicals, and ebooks on the open Nostr network.",
   "start_url": "/",
   "display": "standalone",

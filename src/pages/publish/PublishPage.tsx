@@ -13,7 +13,7 @@ export function PublishPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-6 p-6">
         <div className="text-center">
-          <h2 className="text-2xl font-bold mb-2">Publish on WordStr</h2>
+          <h2 className="text-2xl font-bold mb-2">Publish on wordstr</h2>
           <p className="text-muted-foreground mb-6">
             Log in to start publishing magazines, ebooks and blog posts on Nostr.
           </p>

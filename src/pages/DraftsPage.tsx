@@ -118,8 +118,8 @@ function DraftsLoading() {
 
 export function DraftsPage() {
   useSeoMeta({
-    title: 'Drafts — WordStr',
-    description: 'Your saved blog post drafts on WordStr.',
+    title: 'Drafts — wordstr',
+    description: 'Your saved blog post drafts on wordstr.',
   });
 
   const { user } = useCurrentUser();
@@ -140,7 +140,7 @@ export function DraftsPage() {
           <Link to="/" className="flex items-center gap-2">
             <img
               src="/wordstr-logo.jpg"
-              alt="WordStr"
+              alt="wordstr"
               className="h-6 w-auto rounded"
             />
           </Link>

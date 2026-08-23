@@ -119,18 +119,18 @@ function BlogPreviewCard({ event }: { event: NostrEvent }) {
 
 const Index = () => {
   useSeoMeta({
-    title: 'WordStr',
+    title: 'wordstr',
     description:
       'Publish and discover magazines, periodicals, ebooks, and blog posts on the open Nostr network. No paywalls. No algorithms. Your content, forever.',
     ogType: 'website',
-    ogSiteName: 'WordStr',
-    ogTitle: 'WordStr — Magazines, Ebooks & Blogs on Nostr',
+    ogSiteName: 'wordstr',
+    ogTitle: 'wordstr — Magazines, Ebooks & Blogs on Nostr',
     ogDescription:
       'Publish and discover magazines, periodicals, ebooks, and blog posts on the open Nostr network. No paywalls. No algorithms. Your content, forever.',
     ogImage: 'https://blossom.primal.net/7a4177f088e9d9a004611a2d9a68c8d926ed4374e8afd560e9fa273e859aecdb.jpg',
     ogUrl: 'https://blog.cloudflareblog.workers.dev',
     twitterCard: 'summary_large_image',
-    twitterTitle: 'WordStr — Magazines, Ebooks & Blogs on Nostr',
+    twitterTitle: 'wordstr — Magazines, Ebooks & Blogs on Nostr',
     twitterDescription:
       'Publish and discover magazines, periodicals, ebooks, and blog posts on the open Nostr network. No paywalls. No algorithms. Your content, forever.',
     twitterImage: 'https://blossom.primal.net/7a4177f088e9d9a004611a2d9a68c8d926ed4374e8afd560e9fa273e859aecdb.jpg',
@@ -150,7 +150,7 @@ const Index = () => {
           <Link to="/" className="flex items-center gap-2 min-w-0">
             <img
               src="/wordstr-logo.jpg"
-              alt="WordStr"
+              alt="wordstr"
               className="h-9 w-auto rounded-md shadow-sm"
             />
           </Link>
@@ -399,7 +399,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="border-t border-border/60 py-6 px-4 text-center text-sm text-muted-foreground">
         <p className="flex flex-wrap items-center justify-center gap-1.5">
-          <span className="font-semibold text-foreground/70">WordStr</span>
+          <span className="font-semibold text-foreground/70">wordstr</span>
           <span>— Publications on</span>
           <a href="https://nostr.com" target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 transition-colors font-medium">
             Nostr
