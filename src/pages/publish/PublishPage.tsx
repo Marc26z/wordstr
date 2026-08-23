@@ -44,8 +44,8 @@ export function PublishPage() {
           <Link to="/publish/blog">
             <Card className="group hover:shadow-md hover:shadow-purple-500/10 transition-all duration-200 cursor-pointer border-2 hover:border-purple-500/50">
               <CardContent className="p-6 flex items-center gap-4">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-violet-100 to-purple-100 dark:from-violet-900/30 dark:to-purple-900/30 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                  <FileEdit className="w-7 h-7 text-violet-600 dark:text-violet-400" />
+                <div className="w-14 h-14 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                  <FileEdit className="w-7 h-7 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
                   <h2 className="font-semibold text-lg">Blog Post</h2>
@@ -61,7 +61,7 @@ export function PublishPage() {
           <Link to="/drafts">
             <Card className="group hover:shadow-md hover:shadow-purple-500/10 transition-all duration-200 cursor-pointer border-2 hover:border-purple-500/50">
               <CardContent className="p-6 flex items-center gap-4">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-100 to-fuchsia-100 dark:from-purple-900/30 dark:to-fuchsia-900/30 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                <div className="w-14 h-14 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
                   <FileStack className="w-7 h-7 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>

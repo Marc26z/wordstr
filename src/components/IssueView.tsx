@@ -143,7 +143,7 @@ export function IssueView({ event, naddr }: IssueViewProps) {
                 className="w-48 md:w-56 rounded-xl shadow-lg border object-cover aspect-[2/3]"
               />
             ) : (
-              <div className="w-48 md:w-56 aspect-[2/3] rounded-xl bg-gradient-to-br from-blue-100 to-indigo-200 dark:from-blue-900/30 dark:to-indigo-800/30 flex items-center justify-center border">
+              <div className="w-48 md:w-56 aspect-[2/3] rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center border">
                 <Newspaper className="w-16 h-16 text-blue-400" />
               </div>
             )}

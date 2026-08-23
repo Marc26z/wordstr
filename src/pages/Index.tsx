@@ -61,7 +61,7 @@ function BlogPreviewCard({ event }: { event: NostrEvent }) {
             />
           </div>
         ) : (
-          <div className="aspect-video bg-gradient-to-br from-violet-900/30 to-purple-800/20 flex items-center justify-center">
+          <div className="aspect-video bg-purple-900/30 flex items-center justify-center">
             <FileEdit className="w-10 h-10 text-purple-500/30" />
           </div>
         )}
@@ -98,7 +98,7 @@ function BlogPreviewCard({ event }: { event: NostrEvent }) {
                   className="w-5 h-5 rounded-full object-cover flex-shrink-0"
                 />
               ) : (
-                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center flex-shrink-0">
+                <div className="w-5 h-5 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0">
                   <User className="w-3 h-3 text-white" />
                 </div>
               )}
@@ -188,8 +188,8 @@ const Index = () => {
 
       {/* Hero */}
       <section className="relative overflow-hidden border-b">
-        {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-purple-950 to-violet-900" />
+        {/* Solid black background */}
+        <div className="absolute inset-0 bg-black" />
         {/* Subtle dot grid overlay */}
         <div
           className="absolute inset-0 opacity-20"
@@ -208,7 +208,7 @@ const Index = () => {
             Decentralised publishing on Nostr
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white mb-4 leading-tight">
-            <span className="bg-gradient-to-r from-violet-300 via-purple-200 to-white bg-clip-text text-transparent">
+            <span className="text-purple-400">
               Word
             </span>
             <span className="text-white">Str</span>

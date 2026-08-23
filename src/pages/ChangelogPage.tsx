@@ -16,6 +16,18 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: '1.9.0',
+    date: '2026-08-23',
+    tag: 'feat',
+    title: 'Flat solid purple & black theme — gradients removed',
+    items: [
+      'Hero and profile banner backgrounds are now solid black instead of a black-to-purple gradient.',
+      'All purple/violet gradient fills replaced with solid purple across icon badges, avatar fallbacks, and placeholder tiles.',
+      'Hero headline "Word" is now solid purple instead of a gradient text wash.',
+      'Magazine, issue, and ebook fallback tiles now use solid amber, blue, and purple tints respectively.',
+    ],
+  },
+  {
     version: '1.8.0',
     date: '2026-08-23',
     tag: 'feat',

@@ -158,7 +158,7 @@ export function BlogPostView({ event, naddr }: BlogPostViewProps) {
                   className="w-9 h-9 rounded-full object-cover ring-2 ring-purple-500/20 group-hover:ring-purple-500/50 transition-all"
                 />
               ) : (
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center ring-2 ring-purple-500/20 group-hover:ring-purple-500/50 transition-all">
+                <div className="w-9 h-9 rounded-full bg-purple-600 flex items-center justify-center ring-2 ring-purple-500/20 group-hover:ring-purple-500/50 transition-all">
                   <User className="w-4 h-4 text-white" />
                 </div>
               )}
@@ -271,7 +271,7 @@ export function BlogPostView({ event, naddr }: BlogPostViewProps) {
                 className="w-14 h-14 rounded-full object-cover ring-2 ring-purple-500/30"
               />
             ) : (
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center ring-2 ring-purple-500/30">
+              <div className="w-14 h-14 rounded-full bg-purple-600 flex items-center justify-center ring-2 ring-purple-500/30">
                 <User className="w-7 h-7 text-white" />
               </div>
             )}

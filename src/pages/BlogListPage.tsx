@@ -66,7 +66,7 @@ function BlogCard({ event, isOwner }: { event: NostrEvent; isOwner: boolean }) {
               />
             </div>
           ) : (
-            <div className="h-40 sm:h-full bg-gradient-to-br from-violet-900/40 to-purple-800/40 flex items-center justify-center">
+            <div className="h-40 sm:h-full bg-purple-900/40 flex items-center justify-center">
               <FileEdit className="w-8 h-8 text-purple-500/50" />
             </div>
           )}
@@ -179,7 +179,7 @@ export function BlogListPage({ pubkey }: BlogListPageProps) {
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/80" />
           </div>
         ) : (
-          <div className="h-24 sm:h-32 bg-gradient-to-br from-black via-purple-950 to-violet-900" />
+          <div className="h-24 sm:h-32 bg-black" />
         )}
       </div>
 
@@ -194,7 +194,7 @@ export function BlogListPage({ pubkey }: BlogListPageProps) {
               className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover ring-4 ring-background shadow-lg flex-shrink-0"
             />
           ) : (
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center ring-4 ring-background shadow-lg flex-shrink-0">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-purple-600 flex items-center justify-center ring-4 ring-background shadow-lg flex-shrink-0">
               <User className="w-10 h-10 text-white" />
             </div>
           )}

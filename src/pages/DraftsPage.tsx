@@ -45,7 +45,7 @@ function DraftCard({ draft, onDelete }: { draft: BlogDraft; onDelete: (id: strin
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-violet-900/30 to-purple-800/30">
+              <div className="w-full h-full flex items-center justify-center bg-purple-900/30">
                 <FileEdit className="w-8 h-8 text-purple-500/50" />
               </div>
             )}

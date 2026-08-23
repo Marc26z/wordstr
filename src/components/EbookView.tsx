@@ -113,7 +113,7 @@ export function EbookView({ event, naddr }: EbookViewProps) {
                 className="w-40 md:w-52 rounded-xl shadow-lg border object-cover aspect-[2/3]"
               />
             ) : (
-              <div className="w-40 md:w-52 aspect-[2/3] rounded-xl bg-gradient-to-br from-purple-100 to-pink-200 dark:from-purple-900/30 dark:to-pink-800/30 flex items-center justify-center border">
+              <div className="w-40 md:w-52 aspect-[2/3] rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center border">
                 <BookOpen className="w-16 h-16 text-purple-400" />
               </div>
             )}

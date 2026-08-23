@@ -37,7 +37,7 @@ export function MagazineCard({ event }: MagazineCardProps) {
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-100 to-orange-200 dark:from-amber-900/30 dark:to-orange-800/30">
+            <div className="w-full h-full flex items-center justify-center bg-amber-100 dark:bg-amber-900/30">
               <Newspaper className="w-12 h-12 text-amber-600 dark:text-amber-400" />
             </div>
           )}
@@ -88,7 +88,7 @@ export function IssueCard({ event }: IssueCardProps) {
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-200 dark:from-blue-900/30 dark:to-indigo-800/30">
+            <div className="w-full h-full flex items-center justify-center bg-blue-100 dark:bg-blue-900/30">
               <Newspaper className="w-12 h-12 text-blue-600 dark:text-blue-400" />
             </div>
           )}
@@ -140,7 +140,7 @@ export function EbookCard({ event }: EbookCardProps) {
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-200 dark:from-purple-900/30 dark:to-pink-800/30">
+            <div className="w-full h-full flex items-center justify-center bg-purple-100 dark:bg-purple-900/30">
               <BookOpen className="w-12 h-12 text-purple-600 dark:text-purple-400" />
             </div>
           )}
