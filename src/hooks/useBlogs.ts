@@ -1,16 +1,20 @@
 import { useNostr } from '@nostrify/react';
 import { useQuery } from '@tanstack/react-query';
 import type { NostrEvent } from '@nostrify/nostrify';
+import { SITE_OWNER_PUBKEY } from '@/lib/siteOwner';
 
 export const KIND_BLOG_POST = 30023;
 
-/** Fetch all recent blog posts (kind 30023) */
+/** Fetch the site owner's recent blog posts (kind 30023) */
 export function useBlogs(limit = 50) {
   const { nostr } = useNostr();
   return useQuery<NostrEvent[]>({
     queryKey: ['wordstr', 'blogs', limit],
     queryFn: async (c) =>
-      nostr.query([{ kinds: [KIND_BLOG_POST], limit }], { signal: c.signal }),
+      nostr.query(
+        [{ kinds: [KIND_BLOG_POST], authors: [SITE_OWNER_PUBKEY], limit }],
+        { signal: c.signal },
+      ),
   });
 }
 

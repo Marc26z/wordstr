@@ -16,6 +16,17 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: '1.11.0',
+    date: '2026-08-23',
+    tag: 'feat',
+    title: 'Homepage shows only the site owner\'s content',
+    items: [
+      'The Magazines, Ebooks, and Blogs feeds on the homepage now only show content published by the site owner: npub1marc26z8nh3xkj5rcx7ufkatvx6ueqhp5vfw9v5teq26z254renshtf3g0.',
+      'New SITE_OWNER_PUBKEY constant in src/lib/siteOwner.ts; the feed hooks filter with an authors clause at the relay level.',
+      'Direct links to other authors\' content (naddr, /blog/:npub/:slug, and npub profile routes) still resolve normally — only the homepage feeds are curated.',
+    ],
+  },
+  {
     version: '1.10.0',
     date: '2026-08-23',
     tag: 'feat',

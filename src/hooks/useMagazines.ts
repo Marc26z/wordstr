@@ -2,14 +2,18 @@ import { useNostr } from '@nostrify/react';
 import { useQuery } from '@tanstack/react-query';
 import type { NostrEvent } from '@nostrify/nostrify';
 import { KIND_MAGAZINE, KIND_MAGAZINE_ISSUE, KIND_EBOOK } from '@/lib/pressstr';
+import { SITE_OWNER_PUBKEY } from '@/lib/siteOwner';
 
-/** Fetch all magazines */
+/** Fetch all magazines published by the site owner */
 export function useMagazines() {
   const { nostr } = useNostr();
   return useQuery<NostrEvent[]>({
     queryKey: ['pressstr', 'magazines'],
     queryFn: async (c) =>
-      nostr.query([{ kinds: [KIND_MAGAZINE], limit: 100 }], { signal: c.signal }),
+      nostr.query(
+        [{ kinds: [KIND_MAGAZINE], authors: [SITE_OWNER_PUBKEY], limit: 100 }],
+        { signal: c.signal },
+      ),
   });
 }
 

@@ -13,6 +13,7 @@ import { MagazineCard, EbookCard } from '@/components/PublicationCard';
 import { useMagazines, useEbooks } from '@/hooks/useMagazines';
 import { useBlogs } from '@/hooks/useBlogs';
 import { blogPostUrl } from '@/lib/blogUrl';
+import { SITE_OWNER_PUBKEY } from '@/lib/siteOwner';
 import { useAuthor } from '@/hooks/useAuthor';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { genUserName } from '@/lib/genUserName';
@@ -138,7 +139,7 @@ const Index = () => {
 
   const { user } = useCurrentUser();
   const { data: magazines, isLoading: magsLoading } = useMagazines();
-  const { data: ebooks, isLoading: ebooksLoading } = useEbooks();
+  const { data: ebooks, isLoading: ebooksLoading } = useEbooks(SITE_OWNER_PUBKEY);
   const { data: blogs, isLoading: blogsLoading } = useBlogs(30);
   const [tab, setTab] = useState<'magazines' | 'ebooks' | 'blogs'>('magazines');
 
