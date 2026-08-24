@@ -3,14 +3,22 @@ import { useQuery } from '@tanstack/react-query';
 import type { NostrEvent } from '@nostrify/nostrify';
 import { KIND_MAGAZINE, KIND_MAGAZINE_ISSUE, KIND_EBOOK } from '@/lib/pressstr';
 import { SITE_OWNER_PUBKEY } from '@/lib/siteOwner';
+import { useOwnerWriteRelays } from '@/hooks/useOwnerWriteRelays';
 
-/** Fetch all magazines published by the site owner */
+/**
+ * Fetch all magazines published by the site owner.
+ * Queries the owner's NIP-65 write relays (outbox model) plus the app
+ * defaults, so content shows up completely and consistently.
+ */
 export function useMagazines() {
   const { nostr } = useNostr();
+  const { data: relayUrls } = useOwnerWriteRelays();
+
   return useQuery<NostrEvent[]>({
-    queryKey: ['pressstr', 'magazines'],
+    queryKey: ['pressstr', 'magazines', relayUrls],
+    enabled: Boolean(relayUrls),
     queryFn: async (c) =>
-      nostr.query(
+      nostr.group(relayUrls ?? []).query(
         [{ kinds: [KIND_MAGAZINE], authors: [SITE_OWNER_PUBKEY], limit: 100 }],
         { signal: c.signal },
       ),
@@ -73,15 +81,23 @@ export function useMagazineIssue(pubkey: string | undefined, dTag: string | unde
   });
 }
 
-/** Fetch all ebooks */
+/** Fetch all ebooks (optionally filtered by author) */
 export function useEbooks(authorPubkey?: string) {
   const { nostr } = useNostr();
+  const isOwnerFeed = authorPubkey === SITE_OWNER_PUBKEY;
+  const { data: relayUrls } = useOwnerWriteRelays(isOwnerFeed);
+
   return useQuery<NostrEvent[]>({
-    queryKey: ['pressstr', 'ebooks', authorPubkey ?? 'all'],
+    queryKey: ['pressstr', 'ebooks', authorPubkey ?? 'all', isOwnerFeed ? relayUrls : undefined],
+    enabled: isOwnerFeed ? Boolean(relayUrls) : true,
     queryFn: async (c) => {
       const filter = authorPubkey
         ? { kinds: [KIND_EBOOK], authors: [authorPubkey], limit: 200 }
         : { kinds: [KIND_EBOOK], limit: 100 };
+      // Owner feed: query the owner's write relays (outbox model) for completeness.
+      if (isOwnerFeed && relayUrls) {
+        return nostr.group(relayUrls).query([filter], { signal: c.signal });
+      }
       return nostr.query([filter], { signal: c.signal });
     },
   });

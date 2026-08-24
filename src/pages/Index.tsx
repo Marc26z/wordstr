@@ -140,7 +140,7 @@ const Index = () => {
   const { user } = useCurrentUser();
   const { data: magazines, isLoading: magsLoading } = useMagazines();
   const { data: ebooks, isLoading: ebooksLoading } = useEbooks(SITE_OWNER_PUBKEY);
-  const { data: blogs, isLoading: blogsLoading } = useBlogs(30);
+  const { data: blogs, isLoading: blogsLoading } = useBlogs(100);
   const [tab, setTab] = useState<'magazines' | 'ebooks' | 'blogs'>('blogs');
 
   return (

@@ -2,16 +2,24 @@ import { useNostr } from '@nostrify/react';
 import { useQuery } from '@tanstack/react-query';
 import type { NostrEvent } from '@nostrify/nostrify';
 import { SITE_OWNER_PUBKEY } from '@/lib/siteOwner';
+import { useOwnerWriteRelays } from '@/hooks/useOwnerWriteRelays';
 
 export const KIND_BLOG_POST = 30023;
 
-/** Fetch the site owner's recent blog posts (kind 30023) */
+/**
+ * Fetch the site owner's recent blog posts (kind 30023).
+ * Queries the owner's NIP-65 write relays (outbox model) plus the app
+ * defaults, so posts show up completely and consistently.
+ */
 export function useBlogs(limit = 50) {
   const { nostr } = useNostr();
+  const { data: relayUrls } = useOwnerWriteRelays();
+
   return useQuery<NostrEvent[]>({
-    queryKey: ['wordstr', 'blogs', limit],
+    queryKey: ['wordstr', 'blogs', limit, relayUrls],
+    enabled: Boolean(relayUrls),
     queryFn: async (c) =>
-      nostr.query(
+      nostr.group(relayUrls ?? []).query(
         [{ kinds: [KIND_BLOG_POST], authors: [SITE_OWNER_PUBKEY], limit }],
         { signal: c.signal },
       ),

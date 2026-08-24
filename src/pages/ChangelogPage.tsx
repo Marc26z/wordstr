@@ -16,6 +16,18 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: '1.11.3',
+    date: '2026-08-23',
+    tag: 'fix',
+    title: 'Blog posts now load completely and consistently',
+    items: [
+      'Fixed posts intermittently missing from the homepage: the app previously asked only its default relay set, and logging in swapped that set for the user\'s NIP-65 list — so results depended on which relays happened to hold (or answer for) the posts.',
+      'The owner feeds now use the outbox model: the site owner\'s NIP-65 (kind 10002) write relays are discovered (via the app relays plus purplepag.es and relay.nostr.band) and queried together with the app defaults, so every post that lives on the owner\'s own relays is always found.',
+      'New useOwnerWriteRelays hook (src/hooks/useOwnerWriteRelays.ts) shared by the Magazines, Ebooks, and Blogs feeds.',
+      'Homepage blog limit raised from 30 to 100 so the cap itself can never hide posts.',
+    ],
+  },
+  {
     version: '1.11.2',
     date: '2026-08-23',
     tag: 'feat',
