@@ -16,6 +16,16 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: '1.11.1',
+    date: '2026-08-23',
+    tag: 'feat',
+    title: 'Personal homepage copy',
+    items: [
+      'Hero, SEO, and social meta copy updated to match the curated site: "Essays, magazines, and ebooks by Marc — writer, freedom tech educator, and AI tinkerer — published on the open Nostr network. No paywalls. No algorithms. Just words, forever."',
+      'Open Graph and Twitter titles now read "wordstr — Marc’s writing on Nostr".',
+    ],
+  },
+  {
     version: '1.11.0',
     date: '2026-08-23',
     tag: 'feat',

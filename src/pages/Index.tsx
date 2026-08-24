@@ -122,18 +122,18 @@ const Index = () => {
   useSeoMeta({
     title: 'wordstr',
     description:
-      'Publish and discover magazines, periodicals, ebooks, and blog posts on the open Nostr network. No paywalls. No algorithms. Your content, forever.',
+      'Essays, magazines, and ebooks by Marc — writer, freedom tech educator, and AI tinkerer — published on the open Nostr network. No paywalls. No algorithms. Just words, forever.',
     ogType: 'website',
     ogSiteName: 'wordstr',
-    ogTitle: 'wordstr — Magazines, Ebooks & Blogs on Nostr',
+    ogTitle: 'wordstr — Marc’s writing on Nostr',
     ogDescription:
-      'Publish and discover magazines, periodicals, ebooks, and blog posts on the open Nostr network. No paywalls. No algorithms. Your content, forever.',
+      'Essays, magazines, and ebooks by Marc — writer, freedom tech educator, and AI tinkerer — published on the open Nostr network. No paywalls. No algorithms. Just words, forever.',
     ogImage: 'https://blossom.primal.net/7a4177f088e9d9a004611a2d9a68c8d926ed4374e8afd560e9fa273e859aecdb.jpg',
     ogUrl: 'https://blog.cloudflareblog.workers.dev',
     twitterCard: 'summary_large_image',
-    twitterTitle: 'wordstr — Magazines, Ebooks & Blogs on Nostr',
+    twitterTitle: 'wordstr — Marc’s writing on Nostr',
     twitterDescription:
-      'Publish and discover magazines, periodicals, ebooks, and blog posts on the open Nostr network. No paywalls. No algorithms. Your content, forever.',
+      'Essays, magazines, and ebooks by Marc — writer, freedom tech educator, and AI tinkerer — published on the open Nostr network. No paywalls. No algorithms. Just words, forever.',
     twitterImage: 'https://blossom.primal.net/7a4177f088e9d9a004611a2d9a68c8d926ed4374e8afd560e9fa273e859aecdb.jpg',
   });
 
@@ -215,8 +215,8 @@ const Index = () => {
             <span className="text-white">str</span>
           </h1>
           <p className="text-base sm:text-lg text-white/70 mb-8 max-w-xl mx-auto leading-relaxed">
-            Publish and discover magazines, periodicals, ebooks, and blog posts on the open Nostr network.
-            No paywalls. No algorithms. Your content, forever.
+            Essays, magazines, and ebooks by Marc — writer, freedom tech educator, and AI tinkerer —
+            published on the open Nostr network. No paywalls. No algorithms. Just words, forever.
           </p>
           <div className="flex flex-wrap gap-3 justify-center">
             {user ? (
