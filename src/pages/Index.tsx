@@ -141,7 +141,7 @@ const Index = () => {
   const { data: magazines, isLoading: magsLoading } = useMagazines();
   const { data: ebooks, isLoading: ebooksLoading } = useEbooks(SITE_OWNER_PUBKEY);
   const { data: blogs, isLoading: blogsLoading } = useBlogs(30);
-  const [tab, setTab] = useState<'magazines' | 'ebooks' | 'blogs'>('magazines');
+  const [tab, setTab] = useState<'magazines' | 'ebooks' | 'blogs'>('blogs');
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -242,6 +242,16 @@ const Index = () => {
           <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
             <TabsList className="bg-muted/60">
               <TabsTrigger
+                value="blogs"
+                className="gap-1.5 data-[state=active]:bg-purple-600 data-[state=active]:text-white"
+              >
+                <FileEdit className="w-4 h-4" />
+                <span>Blogs</span>
+                {blogs && (
+                  <span className="text-xs opacity-70 hidden sm:inline">({blogs.length})</span>
+                )}
+              </TabsTrigger>
+              <TabsTrigger
                 value="magazines"
                 className="gap-1.5 data-[state=active]:bg-purple-600 data-[state=active]:text-white"
               >
@@ -259,16 +269,6 @@ const Index = () => {
                 <span>Ebooks</span>
                 {ebooks && (
                   <span className="text-xs opacity-70 hidden sm:inline">({ebooks.length})</span>
-                )}
-              </TabsTrigger>
-              <TabsTrigger
-                value="blogs"
-                className="gap-1.5 data-[state=active]:bg-purple-600 data-[state=active]:text-white"
-              >
-                <FileEdit className="w-4 h-4" />
-                <span>Blogs</span>
-                {blogs && (
-                  <span className="text-xs opacity-70 hidden sm:inline">({blogs.length})</span>
                 )}
               </TabsTrigger>
             </TabsList>

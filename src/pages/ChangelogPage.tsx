@@ -16,6 +16,15 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: '1.11.2',
+    date: '2026-08-23',
+    tag: 'feat',
+    title: 'Blogs tab is now the homepage default',
+    items: [
+      'Blog posts are now the first thing visitors see: the Blogs tab is pre-selected on the homepage and the tab order is Blogs → Magazines → Ebooks.',
+    ],
+  },
+  {
     version: '1.11.1',
     date: '2026-08-23',
     tag: 'feat',
