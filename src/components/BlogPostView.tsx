@@ -13,8 +13,9 @@ import {
 import { useAuthor } from '@/hooks/useAuthor';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { genUserName } from '@/lib/genUserName';
-import { ArrowLeft, Calendar, MoreHorizontal, Pencil, User } from 'lucide-react';
+import { ArrowLeft, Calendar, MoreHorizontal, Pencil, User, Zap } from 'lucide-react';
 import { DeleteEventButton } from '@/components/DeleteEventButton';
+import { ZapDialog } from '@/components/ZapDialog';
 import { CommentsSection } from '@/components/comments/CommentsSection';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { PromoVideo } from '@/components/PromoVideo';
@@ -260,6 +261,27 @@ export function BlogPostView({ event, naddr }: BlogPostViewProps) {
             <p className="text-muted-foreground italic">This post has no content.</p>
           )}
         </div>
+
+        {/* Zap the author */}
+        {user && !isOwner && (authorMeta?.lud16 || authorMeta?.lud06) && (
+          <div className="mt-12 rounded-2xl border border-purple-200 bg-purple-50/60 dark:border-purple-800/40 dark:bg-purple-950/20 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-center sm:text-left">
+              <h3 className="font-semibold flex items-center justify-center sm:justify-start gap-2">
+                <Zap className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                Enjoyed this post?
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Send {authorName} some sats to show your support.
+              </p>
+            </div>
+            <ZapDialog target={event}>
+              <Button className="bg-purple-600 hover:bg-purple-700 text-white gap-2 whitespace-nowrap shadow-md shadow-purple-500/20">
+                <Zap className="w-4 h-4" />
+                Zap the author
+              </Button>
+            </ZapDialog>
+          </div>
+        )}
 
         {/* Author card */}
         <div className="mt-12 rounded-2xl border bg-card p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">

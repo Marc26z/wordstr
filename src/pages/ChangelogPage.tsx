@@ -16,6 +16,19 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: '1.10.0',
+    date: '2026-08-23',
+    tag: 'feat',
+    title: 'Zap the author — Lightning tips on blog posts',
+    items: [
+      'New "Zap the author" card at the end of every blog post, shown to logged-in readers when the author has a Lightning address (lud16/lud06).',
+      'Full NIP-57 zap flow: preset amounts (1–1000 sats), custom amounts, and an optional comment, resolved via the author\'s Lightning address.',
+      'Three payment methods tried in order: Nostr Wallet Connect (NIP-47 via @getalby/sdk), WebLN browser wallets (Alby and friends), or a QR code / lightning: URI fallback that works with any wallet.',
+      'Zap requests reference both the event id and the addressable a-tag of the kind 30023 post, so zap receipts attach to the post in zap-aware clients.',
+      'New infrastructure: NWCContext provider, useNWC / useWallet / useZaps hooks, and ZapDialog / ZapButton / WalletModal components.',
+    ],
+  },
+  {
     version: '1.9.2',
     date: '2026-08-23',
     tag: 'fix',
