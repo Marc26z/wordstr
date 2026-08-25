@@ -13,7 +13,7 @@ import {
 import { useAuthor } from '@/hooks/useAuthor';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { genUserName } from '@/lib/genUserName';
-import { ArrowLeft, Calendar, MoreHorizontal, Pencil, User, Zap } from 'lucide-react';
+import { ArrowLeft, Calendar, Headphones, MoreHorizontal, Pencil, User, Zap } from 'lucide-react';
 import { DeleteEventButton } from '@/components/DeleteEventButton';
 import { ZapDialog } from '@/components/ZapDialog';
 import { CommentsSection } from '@/components/comments/CommentsSection';
@@ -49,6 +49,16 @@ export function BlogPostView({ event, naddr }: BlogPostViewProps) {
   const authorNpub = nip19.npubEncode(event.pubkey);
   const isOwner = user?.pubkey === event.pubkey;
 
+  // Boris (read.withboris.com) deep link — opens this article in the Boris
+  // reader with TTS. The naddr carries relay hints (Boris follows them) so
+  // the event can be found even on relays outside Boris's default set.
+  const borisUrl = `https://read.withboris.com/a/${nip19.naddrEncode({
+    kind: KIND_BLOG_POST,
+    pubkey: event.pubkey,
+    identifier: getTag(event, 'd') ?? '',
+    relays: ['wss://relay.damus.io', 'wss://nos.lol', 'wss://relay.primal.net'],
+  })}`;
+
   const publishedDate = publishedAt
     ? new Date(Number(publishedAt) * 1000).toLocaleDateString(undefined, {
         year: 'numeric',
@@ -79,6 +89,17 @@ export function BlogPostView({ event, naddr }: BlogPostViewProps) {
             {authorName}'s blog
           </Link>
           <div className="flex-1" />
+          <a
+            href={borisUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Open in Boris to listen with text-to-speech"
+          >
+            <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground">
+              <Headphones className="w-4 h-4" />
+              <span className="hidden sm:inline">Boris</span>
+            </Button>
+          </a>
           <ThemeToggle />
           {isOwner && (
             <DropdownMenu>

@@ -16,6 +16,18 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: '1.12.0',
+    date: '2026-08-23',
+    tag: 'feat',
+    title: '"Listen in Boris" — one-tap TTS for every blog post',
+    items: [
+      'New Boris button (headphones icon) in the header of every blog post: opens the article in the Boris reader (read.withboris.com/a/<naddr>), which renders kind 30023 posts and reads them aloud with browser-native text-to-speech.',
+      'The naddr in the link carries relay hints (damus, nos.lol, primal) which Boris follows, so articles resolve even on relays outside Boris\'s default set.',
+      'No protocol changes needed: wordstr posts are standard NIP-23 kind 30023 events (d / title / summary / image / published_at / t tags, Markdown content), which is exactly what Boris renders and reads.',
+      'Tip: bookmarking an article\'s naddr (NIP-51 kind 10003) adds it to your Boris reading list, and Boris shows all your kind 30023 posts under /p/<npub>/writings.',
+    ],
+  },
+  {
     version: '1.11.3',
     date: '2026-08-23',
     tag: 'fix',

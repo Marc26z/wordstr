@@ -44,7 +44,7 @@ All four kinds are **addressable events** (kind range 30000–39999). Editing re
 - `src/components/EbookView.tsx` — Ebook detail page (cover, metadata, download, NIP-22 comments section).
 - `src/components/comments/CommentsSection.tsx` — NIP-22 threaded comment renderer.
 - `src/hooks/useBlogs.ts` — TanStack Query hooks: `useBlogs` (global feed), `useAuthorBlogs` (by pubkey), `useBlogPost` (single by pubkey+d). Exports `KIND_BLOG_POST = 30023`.
-- `src/components/BlogPostView.tsx` — Blog post detail: theme-aware Markdown renderer, promo video, "Zap the author" card, author card, NIP-22 comments.
+- `src/components/BlogPostView.tsx` — Blog post detail: theme-aware Markdown renderer, promo video, "Zap the author" card, "Listen in Boris" deep link (read.withboris.com/a/<naddr> with relay hints, for Boris's TTS reader), author card, NIP-22 comments.
 - `src/components/PromoVideo.tsx` — Resolves Divine video links (kind 34236) and plays them inline.
 - `src/components/ZapDialog.tsx` / `ZapButton.tsx` / `WalletModal.tsx` — NIP-57 zap UI: amount presets, comment, invoice QR fallback, and NWC wallet management.
 - `src/contexts/NWCContext.tsx` + `src/hooks/useNWC.ts` / `useWallet.ts` / `useZaps.ts` — Nostr Wallet Connect (NIP-47) connection state (localStorage), WebLN detection, and the NIP-57 zap-request → LNURL invoice → payment pipeline.
@@ -148,7 +148,7 @@ The `LoginArea` component handles all login flows via `@nostrify/react/login`.
 
 See `/changelog` in the app or `src/pages/ChangelogPage.tsx` in the source for the full release history.
 
-Current version: **1.11.3**
+Current version: **1.12.0**
 
 ## Links
 
