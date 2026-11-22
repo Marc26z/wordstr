@@ -53,6 +53,25 @@ export interface EbookData {
   language?: string;
   isbn?: string;
   content: string;
+  /** Sale price in satoshis. Omit or set to 0 for a free ebook. */
+  priceSats?: number;
+}
+
+/** NIP-99 (kind 30402) listing data for a paid ebook. */
+export interface EbookListingData {
+  /** Same `d` tag as the ebook so the listing is addressable alongside it. */
+  d: string;
+  title: string;
+  summary?: string;
+  image?: string;
+  priceSats: number;
+  publishedAt?: number;
+  /** Addressable coordinate of the ebook, e.g. `33953:<pubkey>:<d>`. */
+  ebookCoord: string;
+  topics: string[];
+  content: string;
+  /** Use `sold` to deactivate a listing when an ebook becomes free. */
+  status?: 'active' | 'sold';
 }
 
 /** Slugify a string for use as a `d` tag */

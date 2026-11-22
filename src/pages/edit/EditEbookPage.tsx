@@ -12,6 +12,8 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { usePublishMagazine } from '@/hooks/usePublishMagazine';
+import { useEbookListing } from '@/hooks/useEbookListing';
+import { parsePriceSats } from '@/lib/nip99';
 import { CoverImagePicker } from '@/components/CoverImagePicker';
 import { PublicationFilePicker } from '@/components/PublicationFilePicker';
 import type { FileUploadResult } from '@/components/PublicationFilePicker';
@@ -29,6 +31,7 @@ interface FormValues {
   language: string;
   isbn: string;
   publishedAt: string;
+  priceSats: string;
   authors: { name: string }[];
 }
 
@@ -41,7 +44,7 @@ export function EditEbookPage() {
   const { nostr } = useNostr();
   const { user } = useCurrentUser();
   const navigate = useNavigate();
-  const { publishEbook } = usePublishMagazine();
+  const { publishEbook, publishEbookListing } = usePublishMagazine();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -66,6 +69,8 @@ export function EditEbookPage() {
     },
   });
 
+  const { data: listing } = useEbookListing(event);
+
   const [coverUrl, setCoverUrl] = useState<string | undefined>(undefined);
   const [fileResult, setFileResult] = useState<FileUploadResult | null>(null);
 
@@ -86,6 +91,7 @@ export function EditEbookPage() {
           publishedAt: getTag(event, 'published_at')
             ? new Date(Number(getTag(event, 'published_at')) * 1000).toISOString().split('T')[0]
             : '',
+          priceSats: listing ? String(parsePriceSats(listing)) : '',
           authors: event.tags.filter(([n]) => n === 'author').map(([, v]) => ({ name: v })),
         }
       : undefined,
@@ -119,6 +125,12 @@ export function EditEbookPage() {
     setIsSubmitting(true);
     try {
       const d = getTag(event, 'd');
+      const priceSats = Math.max(0, Math.floor(Number(values.priceSats) || 0));
+      const publishedAt = values.publishedAt
+        ? Math.floor(new Date(values.publishedAt).getTime() / 1000)
+        : undefined;
+      const topics = values.topics.split(',').map((t) => t.trim()).filter(Boolean);
+
       const updated = await publishEbook({
         d,
         title: values.title.trim(),
@@ -128,15 +140,42 @@ export function EditEbookPage() {
         authors: values.authors.map((a) => a.name).filter(Boolean),
         summary: values.summary.trim() || undefined,
         content: values.content.trim(),
-        publishedAt: values.publishedAt ? Math.floor(new Date(values.publishedAt).getTime() / 1000) : undefined,
+        publishedAt,
         fileSize: effectiveSize,
         fileHash: effectiveHash,
         blossomUri: effectiveBlossomUri,
         mirrorUrls: effectiveMirrorUrls,
-        topics: values.topics.split(',').map((t) => t.trim()).filter(Boolean),
+        topics,
         language: values.language.trim() || undefined,
         isbn: values.isbn.trim() || undefined,
+        priceSats,
       });
+
+      // Keep the NIP-99 listing in sync. Publishing a listing with price 0 and
+      // status `sold` effectively turns the ebook back into a free download.
+      if (priceSats > 0 || listing) {
+        try {
+          await publishEbookListing({
+            d,
+            title: values.title.trim(),
+            summary: values.summary.trim() || undefined,
+            image: effectiveCover,
+            priceSats,
+            publishedAt,
+            ebookCoord: `${KIND_EBOOK}:${updated.pubkey}:${d}`,
+            topics,
+            content: values.content.trim(),
+            status: priceSats > 0 ? 'active' : 'sold',
+          });
+        } catch (listingError) {
+          console.error(listingError);
+          toast({
+            title: 'Sale listing not updated',
+            description: 'The ebook was saved, but its NIP-99 listing could not be updated.',
+            variant: 'destructive',
+          });
+        }
+      }
 
       const newNaddr = nip19.naddrEncode({ kind: KIND_EBOOK, pubkey: updated.pubkey, identifier: d });
       toast({ title: 'Ebook updated!' });
@@ -247,6 +286,22 @@ export function EditEbookPage() {
               <Label htmlFor="isbn">ISBN</Label>
               <Input id="isbn" placeholder="978-..." {...register('isbn')} />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="priceSats">Price in satoshis</Label>
+            <Input
+              id="priceSats"
+              type="number"
+              min={0}
+              step={1}
+              inputMode="numeric"
+              placeholder="0"
+              {...register('priceSats')}
+            />
+            <p className="text-xs text-muted-foreground">
+              Leave empty or 0 to make this ebook a free download.
+            </p>
           </div>
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>

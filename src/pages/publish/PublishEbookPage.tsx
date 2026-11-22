@@ -25,13 +25,14 @@ interface FormValues {
   language: string;
   isbn: string;
   publishedAt: string;
+  priceSats: string;
   authors: { name: string }[];
 }
 
 export function PublishEbookPage() {
   const { user } = useCurrentUser();
   const navigate = useNavigate();
-  const { publishEbook } = usePublishMagazine();
+  const { publishEbook, publishEbookListing } = usePublishMagazine();
   const { toast } = useToast();
   const [coverUrl, setCoverUrl] = useState('');
   const [fileResult, setFileResult] = useState<FileUploadResult | null>(null);
@@ -66,6 +67,12 @@ export function PublishEbookPage() {
     setIsSubmitting(true);
     try {
       const d = slugify(values.title) || `ebook-${Date.now()}`;
+      const priceSats = Math.max(0, Math.floor(Number(values.priceSats) || 0));
+      const publishedAt = values.publishedAt
+        ? Math.floor(new Date(values.publishedAt).getTime() / 1000)
+        : undefined;
+      const topics = values.topics.split(',').map((t) => t.trim()).filter(Boolean);
+
       const event = await publishEbook({
         d,
         title: values.title.trim(),
@@ -75,17 +82,39 @@ export function PublishEbookPage() {
         authors: values.authors.map((a) => a.name).filter(Boolean),
         summary: values.summary.trim() || undefined,
         content: values.content.trim(),
-        publishedAt: values.publishedAt
-          ? Math.floor(new Date(values.publishedAt).getTime() / 1000)
-          : undefined,
+        publishedAt,
         fileSize: fileResult.fileSize || undefined,
         fileHash: fileResult.fileHash || undefined,
         blossomUri: fileResult.blossomUri,
         mirrorUrls: fileResult.mirrorUrls,
-        topics: values.topics.split(',').map((t) => t.trim()).filter(Boolean),
+        topics,
         language: values.language.trim() || undefined,
         isbn: values.isbn.trim() || undefined,
+        priceSats,
       });
+
+      if (priceSats > 0) {
+        try {
+          await publishEbookListing({
+            d,
+            title: values.title.trim(),
+            summary: values.summary.trim() || undefined,
+            image: coverUrl,
+            priceSats,
+            publishedAt,
+            ebookCoord: `${KIND_EBOOK}:${event.pubkey}:${d}`,
+            topics,
+            content: values.content.trim(),
+          });
+        } catch (listingError) {
+          console.error(listingError);
+          toast({
+            title: 'Sale listing not published',
+            description: 'The ebook was published, but its NIP-99 listing could not be saved. Edit the ebook to try again.',
+            variant: 'destructive',
+          });
+        }
+      }
 
       const naddr = nip19.naddrEncode({
         kind: KIND_EBOOK,
@@ -266,6 +295,22 @@ export function PublishEbookPage() {
                 {...register('isbn')}
               />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="priceSats">Price in satoshis</Label>
+            <Input
+              id="priceSats"
+              type="number"
+              min={0}
+              step={1}
+              inputMode="numeric"
+              placeholder="0"
+              {...register('priceSats')}
+            />
+            <p className="text-xs text-muted-foreground">
+              Leave empty or 0 to give this ebook away for free. A paid ebook gets a NIP-99 listing; visitors pay with Lightning without logging in.
+            </p>
           </div>
 
           <Button

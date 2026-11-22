@@ -14,6 +14,17 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: '1.14.0',
+    date: '2026-11-22',
+    tag: 'feat',
+    title: 'Sell ebooks for Bitcoin over Nostr',
+    items: [
+      'Added a price field to ebook publishing and editing. Paid ebooks get a NIP-99 kind 30402 classified listing linked to the ebook.',
+      'Visitors can buy with Lightning without logging in: a temporary Nostr key signs the NIP-57 zap request, and the EPUB downloads automatically when the seller’s receipt arrives on the relay.',
+      'Paid checkout shows a QR invoice and a wallet link for phones; setting the price back to 0 turns the ebook into a free download again.',
+    ],
+  },
+  {
     version: '1.13.0',
     date: '2026-11-22',
     tag: 'feat',

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Download, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
+import { downloadFile } from '@/lib/download';
 
 interface DownloadButtonProps {
   url: string;
@@ -21,21 +22,7 @@ export function DownloadButton({ url, filename, label = 'Download' }: DownloadBu
   const handleDownload = async () => {
     setIsDownloading(true);
     try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-
-      const a = document.createElement('a');
-      a.href = blobUrl;
-      a.download = filename;
-      a.style.display = 'none';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-
-      // Revoke after a short delay to let the browser start the download
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 10_000);
+      await downloadFile(url, filename);
     } catch (err) {
       toast({
         title: 'Download failed',

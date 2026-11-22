@@ -1,6 +1,7 @@
 import { useNostrPublish } from './useNostrPublish';
 import { KIND_MAGAZINE, KIND_MAGAZINE_ISSUE, KIND_EBOOK } from '@/lib/pressstr';
-import type { MagazineData, MagazineIssueData, EbookData } from '@/lib/pressstr';
+import { KIND_CLASSIFIED_LISTING } from '@/lib/nip99';
+import type { MagazineData, MagazineIssueData, EbookData, EbookListingData } from '@/lib/pressstr';
 
 export function usePublishMagazine() {
   const { mutateAsync } = useNostrPublish();
@@ -97,6 +98,33 @@ export function usePublishMagazine() {
       return mutateAsync({
         kind: KIND_EBOOK,
         content: data.content,
+        tags,
+      });
+    },
+
+    /**
+     * Publish (or update) the NIP-99 sale listing for an ebook. The listing is
+     * addressable, so publishing a new one with the same `d` replaces the old.
+     */
+    publishEbookListing: async (data: EbookListingData) => {
+      const tags: string[][] = [
+        ['d', data.d],
+        ['title', data.title],
+        ['summary', data.summary ?? data.title],
+        ['price', String(data.priceSats), 'SAT'],
+        ['a', data.ebookCoord],
+        ['k', String(KIND_EBOOK)],
+        ['status', data.status ?? 'active'],
+      ];
+      if (data.image) tags.push(['image', data.image]);
+      if (data.publishedAt) tags.push(['published_at', String(data.publishedAt)]);
+      for (const t of data.topics) {
+        if (t.trim()) tags.push(['t', t.trim().toLowerCase()]);
+      }
+
+      return mutateAsync({
+        kind: KIND_CLASSIFIED_LISTING,
+        content: data.content || data.summary || data.title,
         tags,
       });
     },
