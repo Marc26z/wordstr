@@ -128,6 +128,7 @@ function loadPdfJs(): Promise<unknown> {
       (window as any)[`${nonce}_err`]?.(e);
     };
     // Clean up blob URL after script executes
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const origCallback = (window as any)[nonce] as (lib: unknown) => void;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any)[nonce] = (lib: unknown) => {

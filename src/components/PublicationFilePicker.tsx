@@ -241,7 +241,7 @@ export function PublicationFilePicker({
       <input
         ref={inputRef}
         type="file"
-        accept="application/pdf,.pdf,application/epub+zip,.epub"
+        accept={accept}
         className="hidden"
         onChange={handleInputChange}
         aria-label={`Upload ${label}`}

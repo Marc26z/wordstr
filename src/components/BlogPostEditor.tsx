@@ -50,7 +50,7 @@ interface BlogPostEditorProps {
   onManualSave?: (values: BlogDraftInput) => void;
 }
 
-export function getTag(event: NostrEvent | undefined, name: string): string {
+function getTag(event: NostrEvent | undefined, name: string): string {
   return event?.tags.find(([n]) => n === name)?.[1] ?? '';
 }
 

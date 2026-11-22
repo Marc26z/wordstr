@@ -62,6 +62,7 @@ All four kinds are **addressable events** (kind range 30000–39999). Editing re
 - `src/pages/publish/` — Publish forms: `PublishPage`, `PublishMagazinePage`, `PublishIssuePage`, `PublishEbookPage`.
 - `src/pages/edit/` — Edit forms: `EditMagazinePage`, `EditIssuePage`, `EditEbookPage`.
 - `src/AppRouter.tsx` — All routes.
+- `src/components/NostrProvider.tsx` — Shared Nostr relay pool. Waits up to 5 seconds after the first EOSE so slower outbox relays can return addressable content before feeds are finalized.
 - `NIP.md` — Full specification of the three custom Nostr event kinds.
 - `public/llms.txt` — This file.
 
@@ -148,7 +149,7 @@ The `LoginArea` component handles all login flows via `@nostrify/react/login`.
 
 See `/changelog` in the app or `src/pages/ChangelogPage.tsx` in the source for the full release history.
 
-Current version: **1.12.0**
+Current version: **1.12.1**
 
 ## Links
 

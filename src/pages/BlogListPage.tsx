@@ -136,7 +136,6 @@ export function BlogListPage({ pubkey }: BlogListPageProps) {
   const authorBanner = authorMeta?.banner;
   const authorAbout = authorMeta?.about;
   const authorWebsite = authorMeta?.website;
-  const authorNpub = nip19.npubEncode(pubkey);
 
   const isOwner = user?.pubkey === pubkey;
 

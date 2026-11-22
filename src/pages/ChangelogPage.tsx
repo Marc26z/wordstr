@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useSeoMeta } from '@unhead/react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { ArrowLeft } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { APP_VERSION } from '@/lib/version';
@@ -15,6 +14,17 @@ interface Release {
 }
 
 const RELEASES: Release[] = [
+  {
+    version: '1.12.1',
+    date: '2026-11-22',
+    tag: 'fix',
+    title: 'Homepage waits for all blog relays',
+    items: [
+      'Fixed blog posts intermittently missing from the homepage when a fast relay responded before the owner\'s write relay.',
+      'Increased the relay response window from 200ms to 5 seconds, allowing slower relays to return their posts before the feed is finalized.',
+      'Updated zap requests to the current nostr-tools event API and made publication file pickers honor their configured file types.',
+    ],
+  },
   {
     version: '1.12.0',
     date: '2026-08-23',

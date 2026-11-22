@@ -77,7 +77,10 @@ const NostrProvider: React.FC<NostrProviderProps> = (props) => {
 
       return [...allRelays];
     },
-    eoseTimeout: 200,
+    // Give slower relays time to return addressable events after the first
+    // EOSE. A short cutoff can drop posts that only exist on the owner's
+    // write relay when a faster default relay responds first.
+    eoseTimeout: 5000,
   }));
 
   // Derive the current signer from the active login. This mirrors the
