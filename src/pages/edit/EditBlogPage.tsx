@@ -13,7 +13,6 @@ import { KIND_BLOG_POST } from '@/hooks/useBlogs';
 import { ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 import { useBlogDrafts } from '@/hooks/useBlogDrafts';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { BlogPostEditor, type BlogDraftInput, type BlogFormValues } from '@/components/BlogPostEditor';
 import NotFound from '@/pages/NotFound';
 
@@ -162,7 +161,6 @@ export function EditBlogPage() {
             <h1 className="text-2xl font-bold">Edit Blog Post</h1>
             <p className="text-sm text-muted-foreground">Update your long-form article on Nostr</p>
           </div>
-          <ThemeToggle />
         </div>
 
         {hasNewerDraft && draftForPost && (

@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useNostrPublish } from '@/hooks/useNostrPublish';
 import { LoginArea } from '@/components/auth/LoginArea';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { blogPostUrl } from '@/lib/blogUrl';
 import { ArrowLeft, FileEdit } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
@@ -138,7 +137,6 @@ export function PublishBlogPage() {
               {draft ? 'Your changes are saved automatically.' : 'Write a long-form article on Nostr (NIP-23)'}
             </p>
           </div>
-          <ThemeToggle />
         </div>
 
         <BlogPostEditor

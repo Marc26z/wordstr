@@ -17,7 +17,6 @@ import { ArrowLeft, Calendar, Headphones, MoreHorizontal, Pencil, User, Zap } fr
 import { DeleteEventButton } from '@/components/DeleteEventButton';
 import { ZapDialog } from '@/components/ZapDialog';
 import { CommentsSection } from '@/components/comments/CommentsSection';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { PromoVideo } from '@/components/PromoVideo';
 import { KIND_BLOG_POST } from '@/hooks/useBlogs';
 import ReactMarkdown from 'react-markdown';
@@ -100,7 +99,6 @@ export function BlogPostView({ event, naddr }: BlogPostViewProps) {
               <span className="hidden sm:inline">Boris</span>
             </Button>
           </a>
-          <ThemeToggle />
           {isOwner && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

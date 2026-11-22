@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import { useSeoMeta } from '@unhead/react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { APP_VERSION } from '@/lib/version';
 
 interface Release {
@@ -14,6 +13,16 @@ interface Release {
 }
 
 const RELEASES: Release[] = [
+  {
+    version: '1.13.0',
+    date: '2026-11-22',
+    tag: 'feat',
+    title: 'Dark mode everywhere',
+    items: [
+      'The entire website now always uses the dark theme on every route, with no light pages.',
+      'Legacy light/system preferences are ignored, theme toggle buttons are removed, and dark mode is applied before the first render to prevent a white flash.',
+    ],
+  },
   {
     version: '1.12.1',
     date: '2026-11-22',
@@ -373,7 +382,6 @@ export function ChangelogPage() {
           <span className="text-muted-foreground text-sm">/</span>
           <span className="text-sm font-medium">Changelog</span>
           <div className="flex-1" />
-          <ThemeToggle />
           <span className="text-xs text-muted-foreground font-mono">v{APP_VERSION}</span>
         </div>
       </div>

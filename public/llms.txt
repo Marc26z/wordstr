@@ -48,8 +48,7 @@ All four kinds are **addressable events** (kind range 30000–39999). Editing re
 - `src/components/PromoVideo.tsx` — Resolves Divine video links (kind 34236) and plays them inline.
 - `src/components/ZapDialog.tsx` / `ZapButton.tsx` / `WalletModal.tsx` — NIP-57 zap UI: amount presets, comment, invoice QR fallback, and NWC wallet management.
 - `src/contexts/NWCContext.tsx` + `src/hooks/useNWC.ts` / `useWallet.ts` / `useZaps.ts` — Nostr Wallet Connect (NIP-47) connection state (localStorage), WebLN detection, and the NIP-57 zap-request → LNURL invoice → payment pipeline.
-- `src/components/ThemeToggle.tsx` — Sun/Moon button to switch between dark and light modes.
-- `src/hooks/useTheme.ts` — Read/set the active theme via AppContext.
+- `src/components/AppProvider.tsx` + `index.html` — Force dark mode on every route, including visitors with legacy light/system preferences. Dark tokens are defined in `src/index.css`; no theme switcher is shown.
 - `src/pages/BlogListPage.tsx` — Author profile page showing profile banner, avatar, bio, and all blog posts.
 - `src/pages/publish/PublishBlogPage.tsx` — Markdown editor with Write/Preview tabs for new blog posts.
 - `src/pages/edit/EditBlogPage.tsx` — Pre-filled edit form for existing blog posts with auto-saved local drafts.
@@ -149,7 +148,7 @@ The `LoginArea` component handles all login flows via `@nostrify/react/login`.
 
 See `/changelog` in the app or `src/pages/ChangelogPage.tsx` in the source for the full release history.
 
-Current version: **1.12.1**
+Current version: **1.13.0**
 
 ## Links
 

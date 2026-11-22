@@ -52,7 +52,9 @@ export function AppProvider(props: AppProviderProps) {
     setConfig(updater);
   };
 
-  const config = { ...defaultConfig, ...rawConfig };
+  // wordstr is intentionally dark-only. Ignore legacy light/system
+  // preferences so every route stays dark for every visitor.
+  const config: AppConfig = { ...defaultConfig, ...rawConfig, theme: 'dark' };
 
   const appContextValue: AppContextType = {
     config,
