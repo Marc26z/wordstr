@@ -2,6 +2,7 @@ import { useNostr } from '@nostrify/react';
 import { useQuery } from '@tanstack/react-query';
 import { useAppContext } from '@/hooks/useAppContext';
 import { SITE_OWNER_PUBKEY } from '@/lib/siteOwner';
+import { queryRelaysMerged } from '@/lib/queryRelays';
 
 /**
  * Well-known relay-list aggregators, used to discover the site owner's
@@ -42,11 +43,15 @@ export function useOwnerWriteRelays(enabled = true) {
       let writeUrls: string[] = [];
 
       try {
-        const discovery = nostr.group([...new Set([...defaultUrls, ...RELAY_DISCOVERY_URLS])]);
-        const [relayList] = await discovery.query(
-          [{ kinds: [10002], authors: [SITE_OWNER_PUBKEY], limit: 1 }],
-          { signal: c.signal },
+        const relayLists = await queryRelaysMerged(
+          nostr,
+          [...new Set([...defaultUrls, ...RELAY_DISCOVERY_URLS])],
+          [{ kinds: [10002], authors: [SITE_OWNER_PUBKEY] }],
+          { signal: c.signal, timeoutMs: 5000 },
         );
+        // queryRelaysMerged returns newest first; NSet also keeps only the
+        // latest kind 10002 per pubkey, so this is the owner's current list.
+        const [relayList] = relayLists;
         writeUrls = (relayList?.tags ?? [])
           .filter(([name, , marker]) => name === 'r' && marker !== 'read')
           .map(([, url]) => normalizeRelayUrl(url))

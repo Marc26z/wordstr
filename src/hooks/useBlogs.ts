@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import type { NostrEvent } from '@nostrify/nostrify';
 import { SITE_OWNER_PUBKEY } from '@/lib/siteOwner';
 import { useOwnerWriteRelays } from '@/hooks/useOwnerWriteRelays';
+import { queryRelaysMerged } from '@/lib/queryRelays';
 
 export const KIND_BLOG_POST = 30023;
 
@@ -19,7 +20,9 @@ export function useBlogs(limit = 50) {
     queryKey: ['wordstr', 'blogs', limit, relayUrls],
     enabled: Boolean(relayUrls),
     queryFn: async (c) =>
-      nostr.group(relayUrls ?? []).query(
+      queryRelaysMerged(
+        nostr,
+        relayUrls ?? [],
         [{ kinds: [KIND_BLOG_POST], authors: [SITE_OWNER_PUBKEY], limit }],
         { signal: c.signal },
       ),

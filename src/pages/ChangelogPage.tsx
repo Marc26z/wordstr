@@ -14,6 +14,17 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: '1.16.1',
+    date: '2026-11-22',
+    tag: 'fix',
+    title: 'All blog posts are showing again',
+    items: [
+      'Fixed the homepage showing only two blog posts after the owner\'s relay list changed to a fast relay holding just a couple of recent articles.',
+      'Owner feeds now query each relay independently and merge the results, so a quick response from one relay can no longer cut off posts still arriving from slower relays.',
+      'Applied the same merge to the magazine, ebook, and relay-list discovery feeds.',
+    ],
+  },
+  {
     version: '1.16.0',
     date: '2026-11-22',
     tag: 'feat',

@@ -41,7 +41,8 @@ Files stay on public Blossom mirrors and Nostr event content is public, so a ski
 - `src/lib/pressstr.ts` — Kind constants (`KIND_MAGAZINE = 34609`, `KIND_MAGAZINE_ISSUE = 39731`, `KIND_EBOOK = 33953`), TypeScript interfaces for publication data, `extractPdfCover()` (PDF.js wrapper), `slugify()`, `sha256Hex()`, `formatFileSize()`.
 - `src/lib/version.ts` — Single source of truth for the app version string (`APP_VERSION`).
 - `src/lib/siteOwner.ts` — `SITE_OWNER_PUBKEY`: the hex pubkey whose content appears in the homepage feeds (Magazines, Ebooks, Blogs). All three hooks filter with an `authors` clause at the relay level; direct links to other authors' events still resolve.
-- `src/hooks/useOwnerWriteRelays.ts` — Outbox-model relay discovery for the owner feeds: fetches the owner's NIP-65 (kind 10002) write relays (via app relays + purplepag.es / relay.nostr.band) and returns their union with the app defaults. The Magazines/Ebooks/Blogs feeds query this set with `nostr.group()` so owner content loads completely and consistently.
+- `src/hooks/useOwnerWriteRelays.ts` — Outbox-model relay discovery for the owner feeds: fetches the owner's NIP-65 (kind 10002) write relays (via app relays + purplepag.es / relay.nostr.band) and returns their union with the app defaults.
+- `src/lib/queryRelays.ts` — `queryRelaysMerged()`: queries each relay independently and merges results with `NSet` (dedupe + newest replaceable version, sorted by `published_at`). Owner feeds use this instead of `nostr.group().query()` because a fast relay reaching EOSE early would otherwise abort the whole query and hide posts still arriving from slower relays.
 - `src/hooks/useBlossomUpload.ts` — Custom BUD-02 Blossom upload hook. Uploads to all 5 servers in parallel (primal.net, satellite.earth, nostrcheck.me, blossom.band, blossom.ditto.pub), signs a fresh kind-24242 auth event per upload, sniffs MIME type from file extension when `file.type` is empty (mobile Safari compatibility). Returns `BlossomUploadResult` with `url` (primary), `mirrorUrls` (all successes), and `blossomUri` (BUD-10 `blossom:` URI).
 - `src/hooks/useMagazines.ts` — TanStack Query hooks: `useMagazines`, `useMagazine`, `useMagazineIssues`, `useMagazineIssue`, `useEbooks`, `useEbook`, `useMyMagazines`.
 - `src/hooks/usePublishMagazine.ts` — `publishMagazine`, `publishMagazineIssue`, `publishEbook`, `publishSaleListing` — builds the correct tag arrays and calls `useNostrPublish`. The generic sale listing supports ebooks, magazines, issues, and blog posts.
@@ -79,7 +80,7 @@ Files stay on public Blossom mirrors and Nostr event content is public, so a ski
 - `src/pages/publish/` — Publish forms: `PublishPage`, `PublishMagazinePage`, `PublishIssuePage`, `PublishEbookPage`, `PublishBlogPage`.
 - `src/pages/edit/` — Edit forms: `EditMagazinePage`, `EditIssuePage`, `EditEbookPage`, `EditBlogPage`.
 - `src/AppRouter.tsx` — All routes.
-- `src/components/NostrProvider.tsx` — Shared Nostr relay pool. Waits up to 5 seconds after the first EOSE so slower outbox relays can return addressable content before feeds are finalized.
+- `src/components/NostrProvider.tsx` — Shared Nostr relay pool. Waits up to 5 seconds after the first EOSE so slower outbox relays can return addressable content before feeds are finalized. Owner completeness is handled separately by `queryRelaysMerged()`.
 - `NIP.md` — Full specification of the three custom Nostr event kinds.
 - `public/llms.txt` — This file.
 
@@ -167,7 +168,7 @@ The `LoginArea` component handles all login flows via `@nostrify/react/login`. N
 
 See `/changelog` in the app or `src/pages/ChangelogPage.tsx` in the source for the full release history.
 
-Current version: **1.16.0**
+Current version: **1.16.1**
 
 ## Links
 

@@ -4,6 +4,7 @@ import type { NostrEvent } from '@nostrify/nostrify';
 import { KIND_MAGAZINE, KIND_MAGAZINE_ISSUE, KIND_EBOOK } from '@/lib/pressstr';
 import { SITE_OWNER_PUBKEY } from '@/lib/siteOwner';
 import { useOwnerWriteRelays } from '@/hooks/useOwnerWriteRelays';
+import { queryRelaysMerged } from '@/lib/queryRelays';
 
 /**
  * Fetch all magazines published by the site owner.
@@ -18,7 +19,9 @@ export function useMagazines() {
     queryKey: ['pressstr', 'magazines', relayUrls],
     enabled: Boolean(relayUrls),
     queryFn: async (c) =>
-      nostr.group(relayUrls ?? []).query(
+      queryRelaysMerged(
+        nostr,
+        relayUrls ?? [],
         [{ kinds: [KIND_MAGAZINE], authors: [SITE_OWNER_PUBKEY], limit: 100 }],
         { signal: c.signal },
       ),
@@ -96,7 +99,7 @@ export function useEbooks(authorPubkey?: string) {
         : { kinds: [KIND_EBOOK], limit: 100 };
       // Owner feed: query the owner's write relays (outbox model) for completeness.
       if (isOwnerFeed && relayUrls) {
-        return nostr.group(relayUrls).query([filter], { signal: c.signal });
+        return queryRelaysMerged(nostr, relayUrls, [filter], { signal: c.signal });
       }
       return nostr.query([filter], { signal: c.signal });
     },
