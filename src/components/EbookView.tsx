@@ -16,9 +16,9 @@ import { genUserName } from '@/lib/genUserName';
 import { ArrowLeft, BookOpen, ExternalLink, FileText, Calendar, Globe, MoreHorizontal, Pencil } from 'lucide-react';
 import { DownloadButton } from '@/components/DownloadButton';
 import { DeleteEventButton } from '@/components/DeleteEventButton';
-import { EbookPurchase } from '@/components/EbookPurchase';
+import { PurchaseCard } from '@/components/PurchaseCard';
 import { CommentsSection } from '@/components/comments/CommentsSection';
-import { useEbookListing } from '@/hooks/useEbookListing';
+import { useSaleListing } from '@/hooks/useSaleListing';
 import { parsePriceSats } from '@/lib/nip99';
 import { formatFileSize } from '@/lib/pressstr';
 
@@ -35,7 +35,7 @@ interface EbookViewProps {
 export function EbookView({ event, naddr }: EbookViewProps) {
   const { user } = useCurrentUser();
   const author = useAuthor(event.pubkey);
-  const { data: listing } = useEbookListing(event);
+  const { data: listing, isLoading: listingLoading } = useSaleListing(event);
 
   const title = getTag(event, 'title') ?? 'Untitled Ebook';
   const image = getTag(event, 'image');
@@ -59,6 +59,7 @@ export function EbookView({ event, naddr }: EbookViewProps) {
   const isForSale = priceSats > 0;
   // Owners keep direct access to their own files, even when the ebook is for sale.
   const showPurchase = isForSale && !isOwner && Boolean(fileUrl);
+  const showDirectDownload = Boolean(fileUrl) && (isOwner || (!listingLoading && !isForSale));
 
   const publishedDate = publishedAt
     ? new Date(Number(publishedAt) * 1000).toLocaleDateString(undefined, {
@@ -182,16 +183,17 @@ export function EbookView({ event, naddr }: EbookViewProps) {
             )}
 
             {showPurchase && listing && (
-              <EbookPurchase
+              <PurchaseCard
                 listing={listing}
                 sellerMetadataEvent={author.data?.event}
+                itemLabel="ebook"
                 fileUrl={fileUrl}
                 filename={`${title}.${isEpub ? 'epub' : 'pdf'}`}
                 format={format}
               />
             )}
 
-            {fileUrl && !showPurchase && (
+            {showDirectDownload && (
               <div className="flex flex-wrap gap-3">
                 <DownloadButton
                   url={fileUrl}

@@ -3,11 +3,13 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useNostrPublish } from '@/hooks/useNostrPublish';
+import { usePublishMagazine } from '@/hooks/usePublishMagazine';
 import { LoginArea } from '@/components/auth/LoginArea';
 import { blogPostUrl } from '@/lib/blogUrl';
 import { ArrowLeft, FileEdit } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 import { KIND_BLOG_POST } from '@/hooks/useBlogs';
+import { saleListingD } from '@/lib/nip99';
 import { useBlogDrafts } from '@/hooks/useBlogDrafts';
 import { BlogPostEditor, type BlogDraftInput, type BlogFormValues } from '@/components/BlogPostEditor';
 
@@ -17,6 +19,7 @@ export function PublishBlogPage() {
   const [searchParams] = useSearchParams();
   const draftId = searchParams.get('draft') ?? undefined;
   const { mutateAsync: publishEvent } = useNostrPublish();
+  const { publishSaleListing } = usePublishMagazine();
   const { toast } = useToast();
   const { get, save, remove } = useBlogDrafts();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,6 +45,7 @@ export function PublishBlogPage() {
         content: draft.content,
         coverImage: draft.coverImage,
         promoVideo: draft.promoVideo,
+        priceSats: draft.priceSats ?? '',
       }
     : undefined;
 
@@ -50,6 +54,7 @@ export function PublishBlogPage() {
     setIsSubmitting(true);
     try {
       const now = Math.floor(Date.now() / 1000);
+      const priceSats = Math.max(0, Math.floor(Number(values.priceSats) || 0));
 
       const tags: string[][] = [
         ['d', dTag],
@@ -75,6 +80,30 @@ export function PublishBlogPage() {
         content: values.content.trim(),
         tags,
       });
+
+      if (priceSats > 0) {
+        try {
+          await publishSaleListing({
+            d: saleListingD(KIND_BLOG_POST, dTag),
+            title: values.title.trim(),
+            summary: values.summary.trim() || undefined,
+            image: coverImage || undefined,
+            priceSats,
+            publishedAt: now,
+            coordinate: `${KIND_BLOG_POST}:${event.pubkey}:${dTag}`,
+            contentKind: KIND_BLOG_POST,
+            topics: topicList,
+            content: values.summary.trim() || values.title.trim(),
+          });
+        } catch (listingError) {
+          console.error(listingError);
+          toast({
+            title: 'Sale listing not published',
+            description: 'The post was published, but its NIP-99 listing could not be saved. Edit the post to try again.',
+            variant: 'destructive',
+          });
+        }
+      }
 
       // Remove any associated draft after successful publish.
       if (draftId) {

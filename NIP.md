@@ -262,20 +262,29 @@ The `url` and `blossom` tags for Ebook (kind 33953):
 
 ---
 
-## Paid Ebooks (NIP-99)
+## Paid Publications (NIP-99)
 
-An ebook may be offered for sale with a standard [NIP-99](https://github.com/nostr-protocol/nips/blob/master/99.md) kind 30402 classified listing. No new kind is introduced. The listing uses the **same `d` tag** as the ebook and adds:
+Ebooks, magazine issues, magazines, and blog posts may be offered for sale with a standard [NIP-99](https://github.com/nostr-protocol/nips/blob/master/99.md) kind 30402 classified listing. No new kind is introduced. The listing references the product via its `a` coordinate and adds:
 
 | Tag | Req | Description |
 |-----|-----|-------------|
-| `d` | **required** | Same identifier as the ebook event. |
-| `price` | **required** | `["price", "<sats>", "SAT"]` — the price in satoshis. `0` means free. |
-| `a` | **required** | Ebook coordinate: `33953:<pubkey>:<d>`. |
-| `k` | optional | `"33953"` — the kind of the referenced ebook. |
+| `d` | **required** | Listing identifier. Ebooks keep the product slug for backwards compatibility; other kinds use `magazine:<d>`, `issue:<d>`, or `blog:<d>` so products with the same slug do not overwrite each other's listing. |
+| `price` | **required** | `["price", "<sats>", "SAT"]` — the price in satoshis. |
+| `a` | **required** | Product coordinate: `<kind>:<pubkey>:<d>`. |
+| `k` | optional | The kind of the referenced product. |
 | `status` | optional | `"active"` (default) or `"sold"` (listing deactivated). |
-| `title`, `summary`, `image`, `published_at`, `t` | optional | Same meaning as on the ebook. |
+| `title`, `summary`, `image`, `published_at`, `t` | optional | Same meaning as on the product. |
 
-Example:
+Supported `a`/`k` values:
+
+| Product | Kind | Coordinate |
+|---------|------|------------|
+| Ebook | `33953` | `33953:<pubkey>:<d>` |
+| Magazine issue | `39731` | `39731:<pubkey>:<d>` |
+| Magazine | `34609` | `34609:<pubkey>:<d>` |
+| Blog post | `30023` | `30023:<pubkey>:<d>` |
+
+Example (ebook):
 
 ```json
 {
@@ -294,11 +303,28 @@ Example:
 }
 ```
 
+Example (blog post):
+
+```json
+{
+  "kind": 30402,
+  "tags": [
+    ["d", "blog:my-paid-post"],
+    ["title", "My Paid Post"],
+    ["price", "500", "SAT"],
+    ["a", "30023:ab12cd...:my-paid-post"],
+    ["k", "30023"],
+    ["status", "active"]
+  ],
+  "content": "My Paid Post"
+}
+```
+
 ### Payment
 
 Payment uses [NIP-57](https://github.com/nostr-protocol/nips/blob/master/57.md) Lightning zaps against the listing. The buyer does not need a Nostr account: the client generates an ephemeral key, signs a kind 9734 zap request with `p` = seller, `a` = listing coordinate, and `amount` in millisats, then requests an invoice from the seller's LNURL-pay endpoint. The seller's wallet publishes a kind 9735 receipt; clients SHOULD treat a receipt as proof of purchase only when it matches the listing coordinate, the buyer's ephemeral pubkey (`P` tag or signed `description`), the price, and the LNURL endpoint's advertised `nostrPubkey`.
 
-Because ebook files live on public Blossom mirrors, this scheme cannot prevent a technically skilled visitor from finding the file URL without paying. It provides a low-friction honour-paywall, not encrypted delivery.
+Because files live on public Blossom mirrors and Nostr events are public, this scheme cannot prevent a technically skilled visitor from finding a file URL or article content without paying. Paid issue files download automatically after payment; paid blog posts and magazines unlock in the client after a verified receipt. This is a low-friction honour-paywall, not encrypted delivery.
 
 ---
 

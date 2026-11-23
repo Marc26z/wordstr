@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { NostrEvent } from '@nostrify/nostrify';
 import { nip19 } from 'nostr-tools';
@@ -13,12 +14,15 @@ import {
 import { useAuthor } from '@/hooks/useAuthor';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { genUserName } from '@/lib/genUserName';
-import { ArrowLeft, Calendar, Headphones, MoreHorizontal, Pencil, User, Zap } from 'lucide-react';
+import { ArrowLeft, Calendar, Headphones, Lock, MoreHorizontal, Pencil, User, Zap } from 'lucide-react';
 import { DeleteEventButton } from '@/components/DeleteEventButton';
 import { ZapDialog } from '@/components/ZapDialog';
 import { CommentsSection } from '@/components/comments/CommentsSection';
 import { PromoVideo } from '@/components/PromoVideo';
+import { PurchaseCard } from '@/components/PurchaseCard';
 import { KIND_BLOG_POST } from '@/hooks/useBlogs';
+import { useSaleListing } from '@/hooks/useSaleListing';
+import { parsePriceSats } from '@/lib/nip99';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -34,6 +38,8 @@ interface BlogPostViewProps {
 export function BlogPostView({ event, naddr }: BlogPostViewProps) {
   const { user } = useCurrentUser();
   const author = useAuthor(event.pubkey);
+  const { data: listing, isLoading: listingLoading } = useSaleListing(event);
+  const [isUnlocked, setIsUnlocked] = useState(false);
 
   const title = getTag(event, 'title') ?? 'Untitled';
   const image = getTag(event, 'image');
@@ -47,6 +53,10 @@ export function BlogPostView({ event, naddr }: BlogPostViewProps) {
   const authorPicture = authorMeta?.picture;
   const authorNpub = nip19.npubEncode(event.pubkey);
   const isOwner = user?.pubkey === event.pubkey;
+  const priceSats = listing ? parsePriceSats(listing) : 0;
+  const isForSale = priceSats > 0;
+  const showPurchase = isForSale && !isOwner;
+  const isLocked = !isOwner && (listingLoading || isForSale) && !isUnlocked;
 
   // Boris (read.withboris.com) deep link — opens this article in the Boris
   // reader with TTS. The naddr carries relay hints (Boris follows them) so
@@ -155,6 +165,7 @@ export function BlogPostView({ event, naddr }: BlogPostViewProps) {
                   {t}
                 </Badge>
               ))}
+              {isForSale && <Badge className="text-xs">{priceSats.toLocaleString()} sats</Badge>}
             </div>
           )}
 
@@ -194,12 +205,31 @@ export function BlogPostView({ event, naddr }: BlogPostViewProps) {
           </div>
         </header>
 
+        {showPurchase && listing && (
+          <div className="mb-8">
+            <PurchaseCard
+              listing={listing}
+              sellerMetadataEvent={author.data?.event}
+              itemLabel="post"
+              onStatusChange={(status) => setIsUnlocked(status === 'paid')}
+            />
+          </div>
+        )}
+
         {/* Divider */}
         <div className="border-t mb-8" />
 
         {/* ── Markdown content ── */}
         <div className="rounded-2xl p-6 sm:p-10 shadow-xl bg-card text-card-foreground dark:bg-[#0d0a14] dark:text-[#f5f3ff]">
-          {event.content ? (
+          {isLocked ? (
+            <div className="py-12 text-center">
+              <Lock className="w-10 h-10 mx-auto mb-4 text-purple-400" />
+              <h2 className="text-xl font-semibold mb-2">This post is paid</h2>
+              <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+                Complete the Lightning payment above to unlock the full article. No account is required.
+              </p>
+            </div>
+          ) : event.content ? (
             <div className="text-[1.0625rem] leading-relaxed">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
@@ -282,7 +312,7 @@ export function BlogPostView({ event, naddr }: BlogPostViewProps) {
         </div>
 
         {/* Zap the author */}
-        {user && !isOwner && (authorMeta?.lud16 || authorMeta?.lud06) && (
+        {user && !isOwner && !isLocked && (authorMeta?.lud16 || authorMeta?.lud06) && (
           <div className="mt-12 rounded-2xl border border-purple-200 bg-purple-50/60 dark:border-purple-800/40 dark:bg-purple-950/20 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-center sm:text-left">
               <h3 className="font-semibold flex items-center justify-center sm:justify-start gap-2">

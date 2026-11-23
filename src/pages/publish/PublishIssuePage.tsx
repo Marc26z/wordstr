@@ -14,6 +14,7 @@ import { PublicationFilePicker } from '@/components/PublicationFilePicker';
 import type { FileUploadResult } from '@/components/PublicationFilePicker';
 import { LoginArea } from '@/components/auth/LoginArea';
 import { KIND_MAGAZINE_ISSUE, slugify } from '@/lib/pressstr';
+import { saleListingD } from '@/lib/nip99';
 import { useMyMagazines } from '@/hooks/useMagazines';
 import { ArrowLeft, Loader2, BookOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -27,6 +28,7 @@ interface FormValues {
   topics: string;
   publishedAt: string;
   content: string;
+  priceSats: string;
 }
 
 export function PublishIssuePage() {
@@ -34,7 +36,7 @@ export function PublishIssuePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const preselectedMag = searchParams.get('magazine') ?? '';
-  const { publishMagazineIssue } = usePublishMagazine();
+  const { publishMagazineIssue, publishSaleListing } = usePublishMagazine();
   const { toast } = useToast();
   const { data: myMagazines } = useMyMagazines(user?.pubkey);
   const [coverUrl, setCoverUrl] = useState('');
@@ -69,6 +71,7 @@ export function PublishIssuePage() {
     setIsSubmitting(true);
     try {
       const d = slugify(`${values.issue}-${Date.now()}`) || `issue-${Date.now()}`;
+      const priceSats = Math.max(0, Math.floor(Number(values.priceSats) || 0));
       const event = await publishMagazineIssue({
         d,
         title: values.title.trim(),
@@ -86,6 +89,32 @@ export function PublishIssuePage() {
         topics: values.topics.split(',').map((t) => t.trim()).filter(Boolean),
         content: values.content.trim(),
       });
+
+      if (priceSats > 0) {
+        try {
+          await publishSaleListing({
+            d: saleListingD(KIND_MAGAZINE_ISSUE, d),
+            title: values.title.trim(),
+            summary: values.summary.trim() || undefined,
+            image: coverUrl,
+            priceSats,
+            publishedAt: values.publishedAt
+              ? Math.floor(new Date(values.publishedAt).getTime() / 1000)
+              : undefined,
+            coordinate: `${KIND_MAGAZINE_ISSUE}:${event.pubkey}:${d}`,
+            contentKind: KIND_MAGAZINE_ISSUE,
+            topics: values.topics.split(',').map((t) => t.trim()).filter(Boolean),
+            content: values.content.trim(),
+          });
+        } catch (listingError) {
+          console.error(listingError);
+          toast({
+            title: 'Sale listing not published',
+            description: 'The issue was published, but its NIP-99 listing could not be saved. Edit the issue to try again.',
+            variant: 'destructive',
+          });
+        }
+      }
 
       const naddr = nip19.naddrEncode({
         kind: KIND_MAGAZINE_ISSUE,
@@ -253,6 +282,22 @@ export function PublishIssuePage() {
               placeholder="bitcoin, tech, culture"
               {...register('topics')}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="priceSats">Price in satoshis</Label>
+            <Input
+              id="priceSats"
+              type="number"
+              min={0}
+              step={1}
+              inputMode="numeric"
+              placeholder="0"
+              {...register('priceSats')}
+            />
+            <p className="text-xs text-muted-foreground">
+              Leave empty or 0 to give this issue away for free. A paid issue gets a NIP-99 listing; visitors pay with Lightning without logging in.
+            </p>
           </div>
 
           <Button

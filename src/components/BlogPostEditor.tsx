@@ -18,6 +18,7 @@ export interface BlogFormValues {
   topics: string;
   content: string;
   promoVideo: string;
+  priceSats: string;
 }
 
 export interface BlogDraftInput {
@@ -27,6 +28,7 @@ export interface BlogDraftInput {
   content: string;
   coverImage: string;
   promoVideo: string;
+  priceSats: string;
 }
 
 interface BlogPostEditorProps {
@@ -34,6 +36,8 @@ interface BlogPostEditorProps {
   event?: NostrEvent;
   /** Existing d-tag identifier when editing; undefined when creating. */
   identifier?: string;
+  /** Existing sale price in satoshis when editing an already-paid post. */
+  salePriceSats?: string;
   /** Initial values used when the form first mounts (e.g. from a draft). */
   initialValues?: Partial<BlogFormValues> & { coverImage?: string };
   /** Whether to reset the form from the provided `event` when it loads. Defaults to true. */
@@ -69,6 +73,7 @@ function hasDraftableContent(values: BlogDraftInput): boolean {
 export function BlogPostEditor({
   event,
   identifier,
+  salePriceSats,
   initialValues,
   prefillFromEvent = true,
   isSubmitting,
@@ -95,6 +100,7 @@ export function BlogPostEditor({
       topics: initialValues?.topics ?? '',
       content: initialValues?.content ?? '',
       promoVideo: initialValues?.promoVideo ?? '',
+      priceSats: salePriceSats ?? initialValues?.priceSats ?? '',
     },
   });
 
@@ -103,6 +109,7 @@ export function BlogPostEditor({
   const topics = watch('topics', '');
   const content = watch('content', '');
   const promoVideo = watch('promoVideo', '');
+  const watchPriceSats = watch('priceSats', '');
 
   // Keep cover image in sync if initialValues changes (e.g. draft load).
   useEffect(() => {
@@ -123,10 +130,11 @@ export function BlogPostEditor({
           .join(', '),
         content: event.content,
         promoVideo: getTag(event, 'video'),
+        priceSats: salePriceSats ?? '',
       });
       setCoverImage(getTag(event, 'image'));
     }
-  }, [event, prefillFromEvent, reset]);
+  }, [event, prefillFromEvent, reset, salePriceSats]);
 
   // Debounced auto-save.
   useEffect(() => {
@@ -143,6 +151,7 @@ export function BlogPostEditor({
       content,
       coverImage,
       promoVideo,
+      priceSats: watchPriceSats,
     };
 
     if (!hasDraftableContent(draft)) return;
@@ -157,7 +166,7 @@ export function BlogPostEditor({
         clearTimeout(autoSaveTimeoutRef.current);
       }
     };
-  }, [title, summary, topics, content, coverImage, promoVideo, onAutoSave]);
+  }, [title, summary, topics, content, coverImage, promoVideo, watchPriceSats, onAutoSave]);
 
   const handleFormSubmit = (values: BlogFormValues) => {
     const dTag = identifier ?? (slugify(values.title) || `blog-${Date.now()}`);
@@ -172,6 +181,7 @@ export function BlogPostEditor({
       content,
       coverImage,
       promoVideo,
+      priceSats: watchPriceSats,
     });
     setAutoSavedAt(Date.now());
   };
@@ -215,6 +225,22 @@ export function BlogPostEditor({
           placeholder="bitcoin, nostr, tech"
           {...register('topics')}
         />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="priceSats">Price in satoshis</Label>
+        <Input
+          id="priceSats"
+          type="number"
+          min={0}
+          step={1}
+          inputMode="numeric"
+          placeholder="0"
+          {...register('priceSats')}
+        />
+        <p className="text-xs text-muted-foreground">
+          Leave empty or 0 to publish for free. A paid post gets a NIP-99 listing; visitors pay with Lightning without logging in.
+        </p>
       </div>
 
       <div className="space-y-2">

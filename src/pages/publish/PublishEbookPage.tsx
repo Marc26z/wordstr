@@ -13,6 +13,7 @@ import { PublicationFilePicker } from '@/components/PublicationFilePicker';
 import type { FileUploadResult } from '@/components/PublicationFilePicker';
 import { LoginArea } from '@/components/auth/LoginArea';
 import { KIND_EBOOK, slugify } from '@/lib/pressstr';
+import { saleListingD } from '@/lib/nip99';
 import { ArrowLeft, Loader2, BookOpen, Plus, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/useToast';
@@ -32,7 +33,7 @@ interface FormValues {
 export function PublishEbookPage() {
   const { user } = useCurrentUser();
   const navigate = useNavigate();
-  const { publishEbook, publishEbookListing } = usePublishMagazine();
+  const { publishEbook, publishSaleListing } = usePublishMagazine();
   const { toast } = useToast();
   const [coverUrl, setCoverUrl] = useState('');
   const [fileResult, setFileResult] = useState<FileUploadResult | null>(null);
@@ -95,14 +96,15 @@ export function PublishEbookPage() {
 
       if (priceSats > 0) {
         try {
-          await publishEbookListing({
-            d,
+          await publishSaleListing({
+            d: saleListingD(KIND_EBOOK, d),
             title: values.title.trim(),
             summary: values.summary.trim() || undefined,
             image: coverUrl,
             priceSats,
             publishedAt,
-            ebookCoord: `${KIND_EBOOK}:${event.pubkey}:${d}`,
+            coordinate: `${KIND_EBOOK}:${event.pubkey}:${d}`,
+            contentKind: KIND_EBOOK,
             topics,
             content: values.content.trim(),
           });

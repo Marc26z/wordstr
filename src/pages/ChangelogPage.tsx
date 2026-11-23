@@ -14,6 +14,17 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: '1.16.0',
+    date: '2026-11-22',
+    tag: 'feat',
+    title: 'Sell magazines and blog posts for Bitcoin',
+    items: [
+      'Added a price field to magazine, magazine issue, and blog post forms; setting a price publishes a NIP-99 listing, and clearing it deactivates the listing.',
+      'Reused the guest Lightning checkout for all paid content: visitors pay without logging in and paid files download automatically.',
+      'Paid blog posts and magazines now unlock their content / issue list after a verified NIP-57 receipt.',
+    ],
+  },
+  {
     version: '1.15.0',
     date: '2026-11-22',
     tag: 'feat',

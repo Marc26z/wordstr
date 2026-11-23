@@ -14,6 +14,8 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { usePublishMagazine } from '@/hooks/usePublishMagazine';
 import { CoverImagePicker } from '@/components/CoverImagePicker';
 import { KIND_MAGAZINE } from '@/lib/pressstr';
+import { parsePriceSats, saleListingD } from '@/lib/nip99';
+import { useSaleListing } from '@/hooks/useSaleListing';
 import { ArrowLeft, Loader2, Newspaper } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/useToast';
@@ -26,6 +28,7 @@ interface FormValues {
   language: string;
   url: string;
   content: string;
+  priceSats: string;
 }
 
 function getTag(event: NostrEvent, name: string) {
@@ -37,7 +40,7 @@ export function EditMagazinePage() {
   const { nostr } = useNostr();
   const { user } = useCurrentUser();
   const navigate = useNavigate();
-  const { publishMagazine } = usePublishMagazine();
+  const { publishMagazine, publishSaleListing } = usePublishMagazine();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -63,6 +66,8 @@ export function EditMagazinePage() {
     },
   });
 
+  const { data: listing } = useSaleListing(event);
+
   const [logoUrl, setLogoUrl] = useState<string | undefined>(undefined);
 
   const {
@@ -78,6 +83,7 @@ export function EditMagazinePage() {
           language: getTag(event, 'l'),
           url: getTag(event, 'url'),
           content: event.content,
+          priceSats: listing ? String(parsePriceSats(listing)) : '',
         }
       : undefined,
   });
@@ -89,16 +95,44 @@ export function EditMagazinePage() {
     setIsSubmitting(true);
     try {
       const d = getTag(event, 'd');
+      const priceSats = Math.max(0, Math.floor(Number(values.priceSats) || 0));
+      const topics = values.topics.split(',').map((t) => t.trim()).filter(Boolean);
       const updated = await publishMagazine({
         d,
         title: values.title.trim(),
         image: effectiveLogo || undefined,
         summary: values.summary.trim() || undefined,
-        topics: values.topics.split(',').map((t) => t.trim()).filter(Boolean),
+        topics,
         language: values.language.trim() || undefined,
         url: values.url.trim() || undefined,
         content: values.content.trim(),
       });
+
+      // A `sold` listing turns the magazine back into a free publication.
+      if (priceSats > 0 || listing) {
+        try {
+          await publishSaleListing({
+            d: saleListingD(KIND_MAGAZINE, d),
+            title: values.title.trim(),
+            summary: values.summary.trim() || undefined,
+            image: effectiveLogo || undefined,
+            priceSats,
+            publishedAt: Number(getTag(event, 'published_at')) || event.created_at,
+            coordinate: `${KIND_MAGAZINE}:${updated.pubkey}:${d}`,
+            contentKind: KIND_MAGAZINE,
+            topics,
+            content: values.content.trim(),
+            status: priceSats > 0 ? 'active' : 'sold',
+          });
+        } catch (listingError) {
+          console.error(listingError);
+          toast({
+            title: 'Sale listing not updated',
+            description: 'The magazine was saved, but its NIP-99 listing could not be updated.',
+            variant: 'destructive',
+          });
+        }
+      }
 
       const newNaddr = nip19.naddrEncode({ kind: KIND_MAGAZINE, pubkey: updated.pubkey, identifier: d });
       toast({ title: 'Magazine updated!' });
@@ -174,6 +208,22 @@ export function EditMagazinePage() {
           <div className="space-y-2">
             <Label htmlFor="url">Website URL</Label>
             <Input id="url" type="url" placeholder="https://yourmagazine.com" {...register('url')} />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="priceSats">Price in satoshis</Label>
+            <Input
+              id="priceSats"
+              type="number"
+              min={0}
+              step={1}
+              inputMode="numeric"
+              placeholder="0"
+              {...register('priceSats')}
+            />
+            <p className="text-xs text-muted-foreground">
+              Leave empty or 0 to keep the magazine free.
+            </p>
           </div>
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>

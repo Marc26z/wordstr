@@ -12,8 +12,8 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { usePublishMagazine } from '@/hooks/usePublishMagazine';
-import { useEbookListing } from '@/hooks/useEbookListing';
-import { parsePriceSats } from '@/lib/nip99';
+import { useSaleListing } from '@/hooks/useSaleListing';
+import { parsePriceSats, saleListingD } from '@/lib/nip99';
 import { CoverImagePicker } from '@/components/CoverImagePicker';
 import { PublicationFilePicker } from '@/components/PublicationFilePicker';
 import type { FileUploadResult } from '@/components/PublicationFilePicker';
@@ -44,7 +44,7 @@ export function EditEbookPage() {
   const { nostr } = useNostr();
   const { user } = useCurrentUser();
   const navigate = useNavigate();
-  const { publishEbook, publishEbookListing } = usePublishMagazine();
+  const { publishEbook, publishSaleListing } = usePublishMagazine();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -69,7 +69,7 @@ export function EditEbookPage() {
     },
   });
 
-  const { data: listing } = useEbookListing(event);
+  const { data: listing } = useSaleListing(event);
 
   const [coverUrl, setCoverUrl] = useState<string | undefined>(undefined);
   const [fileResult, setFileResult] = useState<FileUploadResult | null>(null);
@@ -155,14 +155,15 @@ export function EditEbookPage() {
       // status `sold` effectively turns the ebook back into a free download.
       if (priceSats > 0 || listing) {
         try {
-          await publishEbookListing({
-            d,
+          await publishSaleListing({
+            d: saleListingD(KIND_EBOOK, d),
             title: values.title.trim(),
             summary: values.summary.trim() || undefined,
             image: effectiveCover,
             priceSats,
             publishedAt,
-            ebookCoord: `${KIND_EBOOK}:${updated.pubkey}:${d}`,
+            coordinate: `${KIND_EBOOK}:${updated.pubkey}:${d}`,
+            contentKind: KIND_EBOOK,
             topics,
             content: values.content.trim(),
             status: priceSats > 0 ? 'active' : 'sold',

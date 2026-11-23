@@ -9,7 +9,10 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useNostrPublish } from '@/hooks/useNostrPublish';
+import { usePublishMagazine } from '@/hooks/usePublishMagazine';
+import { useSaleListing } from '@/hooks/useSaleListing';
 import { KIND_BLOG_POST } from '@/hooks/useBlogs';
+import { parsePriceSats, saleListingD } from '@/lib/nip99';
 import { ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 import { useBlogDrafts } from '@/hooks/useBlogDrafts';
@@ -22,6 +25,7 @@ export function EditBlogPage() {
   const navigate = useNavigate();
   const { nostr } = useNostr();
   const { mutateAsync: publishEvent } = useNostrPublish();
+  const { publishSaleListing } = usePublishMagazine();
   const { toast } = useToast();
   const { drafts, save, removeByDTag } = useBlogDrafts();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,6 +53,8 @@ export function EditBlogPage() {
     },
   });
 
+  const { data: listing, isLoading: listingLoading } = useSaleListing(event);
+
   const draftForPost = useMemo(() => {
     if (!decoded) return undefined;
     return drafts.find((d) => d.dTag === decoded.identifier);
@@ -67,6 +73,7 @@ export function EditBlogPage() {
         content: draftForPost.content,
         coverImage: draftForPost.coverImage,
         promoVideo: draftForPost.promoVideo,
+        priceSats: draftForPost.priceSats ?? '',
       }
     : undefined;
 
@@ -74,10 +81,12 @@ export function EditBlogPage() {
     if (!user || !event || !decoded) return;
     setIsSubmitting(true);
     try {
+      const priceSats = Math.max(0, Math.floor(Number(values.priceSats) || 0));
+      const publishedAt = Number(getTag(event, 'published_at')) || Math.floor(Date.now() / 1000);
       const tags: string[][] = [
         ['d', dTag],
         ['title', values.title.trim()],
-        ['published_at', getTag(event, 'published_at') || String(Math.floor(Date.now() / 1000))],
+        ['published_at', String(publishedAt)],
         ['alt', `Blog post: ${values.title.trim()}`],
       ];
 
@@ -98,6 +107,32 @@ export function EditBlogPage() {
         content: values.content.trim(),
         tags,
       });
+
+      // A `sold` listing turns the post back into free content.
+      if (priceSats > 0 || listing) {
+        try {
+          await publishSaleListing({
+            d: saleListingD(KIND_BLOG_POST, dTag),
+            title: values.title.trim(),
+            summary: values.summary.trim() || undefined,
+            image: coverImage || undefined,
+            priceSats,
+            publishedAt,
+            coordinate: `${KIND_BLOG_POST}:${decoded.pubkey}:${dTag}`,
+            contentKind: KIND_BLOG_POST,
+            topics: topicList,
+            content: values.summary.trim() || values.title.trim(),
+            status: priceSats > 0 ? 'active' : 'sold',
+          });
+        } catch (listingError) {
+          console.error(listingError);
+          toast({
+            title: 'Sale listing not updated',
+            description: 'The post was saved, but its NIP-99 listing could not be updated.',
+            variant: 'destructive',
+          });
+        }
+      }
 
       // Remove any draft tied to this post after a successful update.
       removeByDTag(dTag);
@@ -125,7 +160,7 @@ export function EditBlogPage() {
   };
 
   if (!naddr || !decoded) return <NotFound />;
-  if (isLoading) {
+  if (isLoading || listingLoading) {
     return (
       <div className="min-h-screen bg-background max-w-3xl mx-auto px-4 py-8 space-y-4">
         <Skeleton className="h-8 w-48" />
@@ -187,6 +222,7 @@ export function EditBlogPage() {
           key={restoringDraft ? 'draft' : 'published'}
           event={event}
           identifier={decoded.identifier}
+          salePriceSats={!restoringDraft && listing ? String(parsePriceSats(listing)) : undefined}
           initialValues={restoringDraft ? draftInitialValues : undefined}
           prefillFromEvent={!restoringDraft}
           isSubmitting={isSubmitting}

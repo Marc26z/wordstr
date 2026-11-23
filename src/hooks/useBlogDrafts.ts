@@ -23,6 +23,8 @@ export interface BlogDraft {
   coverImage: string;
   /** Optional Divine video URL for the promotional video. */
   promoVideo: string;
+  /** Optional sale price in satoshis, as entered in the form. */
+  priceSats?: string;
   /** Unix timestamp when the draft was first created. */
   createdAt: number;
   /** Unix timestamp when the draft was last updated. */

@@ -10,18 +10,18 @@ wordstr uses three custom addressable Nostr event kinds (documented in `NIP.md`)
 - **Kind 39731 — Magazine Issue**: A single issue of a magazine. Carries a free-form issue label (not restricted to numbers), a cover image, a PDF file URL, file size, SHA-256 hash, and a reference to the parent magazine via an `a` tag (`34609:<pubkey>:<d>`).
 - **Kind 33953 — Ebook**: A standalone ebook in PDF or EPUB format. Carries a title, cover image, file URL, authors, ISBN, language, topics, and file integrity data.
 - **Kind 30023 — Blog Post** (NIP-23): Long-form Markdown articles. Standard fields: `d` slug, `title`, `image`, `summary`, `published_at`, `t` topic tags. Content is raw Markdown rendered with `react-markdown` + `remark-gfm`.
-- **Kind 30402 — Classified Listing** (NIP-99): Optional sale listing for an ebook. Uses the same `d` tag as the ebook, a `price` tag in satoshis (`["price", "<sats>", "SAT"]`), an `a` tag pointing at the ebook (`33953:<pubkey>:<d>`), and `status` (`active` or `sold`). Buyers pay with a NIP-57 Lightning zap to this listing; no login is required.
+- **Kind 30402 — Classified Listing** (NIP-99): Optional sale listing for an ebook, magazine, magazine issue, or blog post. It carries a `price` tag in satoshis (`["price", "<sats>", "SAT"]`), an `a` tag pointing at the product (`<kind>:<pubkey>:<d>`), a `k` tag naming the product kind, and `status` (`active` or `sold`). Listing `d` values are namespaced for new products (`blog:`, `magazine:`, `issue:`) while ebooks keep the raw slug for backwards compatibility. Buyers pay with a NIP-57 Lightning zap to this listing; no login is required.
 
 All five kinds are **addressable events** (kind range 30000–39999). Editing re-publishes with the same `d` tag, replacing the event in-place on relays. Deletion sends a NIP-09 kind-5 request.
 
-### Paid ebook checkout flow
+### Paid publication checkout flow
 
-1. The publisher sets a price in satoshis. wordstr publishes the ebook plus a linked NIP-99 kind 30402 listing.
+1. The publisher sets a price in satoshis on an ebook, magazine, issue, or blog post. wordstr publishes the product plus a linked NIP-99 kind 30402 listing; clearing the price publishes a `sold` listing that deactivates the sale.
 2. A visitor taps "Pay"; the browser generates a temporary Nostr key and signs a NIP-57 kind 9734 zap request targeting the listing (`p` = seller, `a` = listing coordinate, `amount` in millisats).
 3. The request is sent to the seller's LNURL-pay callback (from their kind-0 `lud16`/`lud06`) and the returned BOLT11 invoice is shown as a QR code plus a `lightning:` wallet link.
-4. wordstr polls relays for a NIP-57 kind 9735 receipt with a matching `a` tag, buyer key (`P` tag or signed `description`), amount, and the wallet's `nostrPubkey`. On match, the EPUB downloads automatically.
+4. wordstr polls relays for a NIP-57 kind 9735 receipt with a matching `a` tag, buyer key (`P` tag or signed `description`), amount, and the wallet's `nostrPubkey`. On match, paid files (EPUB/PDF) download automatically; paid blog posts and magazines unlock in the client.
 
-The EPUB stays on public Blossom mirrors, so a skilled user could discover the URL and bypass payment. This is an intentional trade-off; no encrypted delivery or backend is involved.
+Files stay on public Blossom mirrors and Nostr event content is public, so a skilled user could discover a file URL or article body without paying. This is an intentional honour-paywall trade-off; no encrypted delivery or backend is involved.
 
 ## Technology Stack
 
@@ -44,40 +44,40 @@ The EPUB stays on public Blossom mirrors, so a skilled user could discover the U
 - `src/hooks/useOwnerWriteRelays.ts` — Outbox-model relay discovery for the owner feeds: fetches the owner's NIP-65 (kind 10002) write relays (via app relays + purplepag.es / relay.nostr.band) and returns their union with the app defaults. The Magazines/Ebooks/Blogs feeds query this set with `nostr.group()` so owner content loads completely and consistently.
 - `src/hooks/useBlossomUpload.ts` — Custom BUD-02 Blossom upload hook. Uploads to all 5 servers in parallel (primal.net, satellite.earth, nostrcheck.me, blossom.band, blossom.ditto.pub), signs a fresh kind-24242 auth event per upload, sniffs MIME type from file extension when `file.type` is empty (mobile Safari compatibility). Returns `BlossomUploadResult` with `url` (primary), `mirrorUrls` (all successes), and `blossomUri` (BUD-10 `blossom:` URI).
 - `src/hooks/useMagazines.ts` — TanStack Query hooks: `useMagazines`, `useMagazine`, `useMagazineIssues`, `useMagazineIssue`, `useEbooks`, `useEbook`, `useMyMagazines`.
-- `src/hooks/usePublishMagazine.ts` — `publishMagazine`, `publishMagazineIssue`, `publishEbook`, `publishEbookListing` — builds the correct tag arrays and calls `useNostrPublish`.
+- `src/hooks/usePublishMagazine.ts` — `publishMagazine`, `publishMagazineIssue`, `publishEbook`, `publishSaleListing` — builds the correct tag arrays and calls `useNostrPublish`. The generic sale listing supports ebooks, magazines, issues, and blog posts.
 - `src/hooks/useComments.ts` / `src/hooks/usePostComment.ts` — NIP-22 (kind 1111) comment fetching and posting.
 - `src/components/CoverImagePicker.tsx` — Image upload widget with drag-and-drop, preview, and remove button.
 - `src/components/PublicationFilePicker.tsx` — PDF/EPUB upload widget with three-phase progress (extracting cover → uploading cover → uploading file) and auto cover extraction.
 - `src/components/DownloadButton.tsx` — Forces a real browser download (fetch → Blob → object URL) for cross-origin Blossom files, since the HTML `download` attribute is ignored for cross-origin URLs.
 - `src/components/DeleteEventButton.tsx` — NIP-09 deletion with AlertDialog confirmation.
-- `src/components/MagazineView.tsx` — Magazine detail page (logo, description, issue grid, owner edit/delete menu).
-- `src/components/IssueView.tsx` — Issue detail page (cover, metadata, download, NIP-22 comments section).
+- `src/components/MagazineView.tsx` — Magazine detail page (logo, description, paid-unlock or issue grid, owner edit/delete menu).
+- `src/components/IssueView.tsx` — Issue detail page (cover, metadata, paid checkout or direct download, NIP-22 comments section).
 - `src/components/EbookView.tsx` — Ebook detail page (cover, metadata, free download or paid checkout, NIP-22 comments section).
-- `src/lib/nip99.ts` — NIP-99 kind constants and helpers: event coordinates, `price` tag parsing (satoshis), listing→ebook linking.
+- `src/lib/nip99.ts` — NIP-99 kind constants and helpers: event coordinates, namespaced listing `d` values, `price` tag parsing (satoshis), and listing→product linking.
 - `src/lib/lightning.ts` — Guest checkout protocol helpers: LNURL-pay endpoint resolution from kind-0 metadata and NIP-57 zap receipt validation (buyer, listing, amount, wallet pubkey).
-- `src/lib/download.ts` — Shared cross-origin Blob download helper used by free and paid ebook downloads.
-- `src/hooks/useEbookListing.ts` — Finds the NIP-99 listing attached to an ebook by `a` coordinate or `d` tag.
-- `src/hooks/useEbookPurchase.ts` — Guest checkout state machine: temporary key, zap-request signing, invoice creation, receipt polling, and session restore.
-- `src/components/EbookPurchase.tsx` — Paid ebook UI: price, QR invoice, `lightning:` wallet link, copy invoice, payment status, and automatic download on receipt.
+- `src/lib/download.ts` — Shared cross-origin Blob download helper used by free and paid file downloads.
+- `src/hooks/useSaleListing.ts` — Finds the NIP-99 listing attached to any addressable product by `a` coordinate (with a `d`-tag fallback for legacy ebook listings).
+- `src/hooks/useNip99Purchase.ts` — Guest checkout state machine: temporary key, zap-request signing, invoice creation, receipt polling, and session restore.
+- `src/components/PurchaseCard.tsx` — Shared paid-content UI: price, QR invoice, `lightning:` wallet link, copy invoice, payment status, and automatic file download on receipt.
 - `src/components/comments/CommentsSection.tsx` — NIP-22 threaded comment renderer.
 - `src/hooks/useBlogs.ts` — TanStack Query hooks: `useBlogs` (global feed), `useAuthorBlogs` (by pubkey), `useBlogPost` (single by pubkey+d). Exports `KIND_BLOG_POST = 30023`.
 - `src/hooks/useNostrExtension.ts` — Detects a NIP-07 signer (`window.nostr.getPublicKey` + `signEvent`), re-checking after mount and on window focus so late-injecting extensions are found. Powers the first-class “Sign in with browser extension” button in `AuthDialog`.
-- `src/components/BlogPostView.tsx` — Blog post detail: theme-aware Markdown renderer, promo video, "Zap the author" card, "Listen in Boris" deep link (read.withboris.com/a/<naddr> with relay hints, for Boris's TTS reader), author card, NIP-22 comments.
+- `src/components/BlogPostView.tsx` — Blog post detail: paid-content unlock, theme-aware Markdown renderer, promo video, "Zap the author" card, "Listen in Boris" deep link (read.withboris.com/a/<naddr> with relay hints, for Boris's TTS reader), author card, NIP-22 comments.
 - `src/components/PromoVideo.tsx` — Resolves Divine video links (kind 34236) and plays them inline.
 - `src/components/ZapDialog.tsx` / `ZapButton.tsx` / `WalletModal.tsx` — NIP-57 zap UI: amount presets, comment, invoice QR fallback, and NWC wallet management.
 - `src/contexts/NWCContext.tsx` + `src/hooks/useNWC.ts` / `useWallet.ts` / `useZaps.ts` — Nostr Wallet Connect (NIP-47) connection state (localStorage), WebLN detection, and the NIP-57 zap-request → LNURL invoice → payment pipeline.
 - `src/components/AppProvider.tsx` + `index.html` — Force dark mode on every route, including visitors with legacy light/system preferences. Dark tokens are defined in `src/index.css`; no theme switcher is shown.
 - `src/pages/BlogListPage.tsx` — Author profile page showing profile banner, avatar, bio, and all blog posts.
-- `src/pages/publish/PublishBlogPage.tsx` — Markdown editor with Write/Preview tabs for new blog posts.
-- `src/pages/edit/EditBlogPage.tsx` — Pre-filled edit form for existing blog posts with auto-saved local drafts.
+- `src/pages/publish/PublishBlogPage.tsx` — Markdown editor with Write/Preview tabs and optional price for new blog posts.
+- `src/pages/edit/EditBlogPage.tsx` — Pre-filled edit form for existing blog posts with auto-saved local drafts and sale-price sync.
 - `src/pages/DraftsPage.tsx` — Lists saved local blog post drafts with continue / delete actions.
 - `src/components/BlogPostEditor.tsx` — Shared Markdown editor, preview, hero image, and draft auto-save component.
 - `src/hooks/useBlogDrafts.ts` — localStorage draft CRUD scoped to the logged-in pubkey.
 - `src/pages/Index.tsx` — Home page with Magazines / Ebooks / Blogs tabs.
 - `src/pages/ChangelogPage.tsx` — Full release history at `/changelog`.
 - `src/pages/NIP19Page.tsx` — NIP-19 router: decodes naddr identifiers and renders the correct view.
-- `src/pages/publish/` — Publish forms: `PublishPage`, `PublishMagazinePage`, `PublishIssuePage`, `PublishEbookPage`.
-- `src/pages/edit/` — Edit forms: `EditMagazinePage`, `EditIssuePage`, `EditEbookPage`.
+- `src/pages/publish/` — Publish forms: `PublishPage`, `PublishMagazinePage`, `PublishIssuePage`, `PublishEbookPage`, `PublishBlogPage`.
+- `src/pages/edit/` — Edit forms: `EditMagazinePage`, `EditIssuePage`, `EditEbookPage`, `EditBlogPage`.
 - `src/AppRouter.tsx` — All routes.
 - `src/components/NostrProvider.tsx` — Shared Nostr relay pool. Waits up to 5 seconds after the first EOSE so slower outbox relays can return addressable content before feeds are finalized.
 - `NIP.md` — Full specification of the three custom Nostr event kinds.
@@ -110,6 +110,7 @@ The EPUB stays on public Blossom mirrors, so a skilled user could discover the U
 | 34609 | Magazine | Addressable | Named publication, groups issues |
 | 39731 | Magazine Issue | Addressable | Single PDF issue of a magazine |
 | 33953 | Ebook | Addressable | Standalone PDF or EPUB ebook |
+| 30402 | Classified Listing | Addressable | NIP-99 sale listing for any paid publication |
 | 1111 | Comment | Regular | NIP-22 threaded comment |
 | 5 | Deletion | Regular | NIP-09 deletion request |
 | 24242 | Blossom Auth | Regular | BUD-02 upload authorisation event |
@@ -166,7 +167,7 @@ The `LoginArea` component handles all login flows via `@nostrify/react/login`. N
 
 See `/changelog` in the app or `src/pages/ChangelogPage.tsx` in the source for the full release history.
 
-Current version: **1.15.0**
+Current version: **1.16.0**
 
 ## Links
 

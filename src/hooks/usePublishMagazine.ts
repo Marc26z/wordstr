@@ -1,7 +1,7 @@
 import { useNostrPublish } from './useNostrPublish';
 import { KIND_MAGAZINE, KIND_MAGAZINE_ISSUE, KIND_EBOOK } from '@/lib/pressstr';
 import { KIND_CLASSIFIED_LISTING } from '@/lib/nip99';
-import type { MagazineData, MagazineIssueData, EbookData, EbookListingData } from '@/lib/pressstr';
+import type { MagazineData, MagazineIssueData, EbookData, SaleListingData } from '@/lib/pressstr';
 
 export function usePublishMagazine() {
   const { mutateAsync } = useNostrPublish();
@@ -103,17 +103,18 @@ export function usePublishMagazine() {
     },
 
     /**
-     * Publish (or update) the NIP-99 sale listing for an ebook. The listing is
-     * addressable, so publishing a new one with the same `d` replaces the old.
+     * Publish (or update) a NIP-99 sale listing for any addressable wordstr
+     * item. The listing is addressable, so publishing a new one with the same
+     * `d` replaces the old. Status `sold` deactivates an old listing.
      */
-    publishEbookListing: async (data: EbookListingData) => {
+    publishSaleListing: async (data: SaleListingData) => {
       const tags: string[][] = [
         ['d', data.d],
         ['title', data.title],
         ['summary', data.summary ?? data.title],
-        ['price', String(data.priceSats), 'SAT'],
-        ['a', data.ebookCoord],
-        ['k', String(KIND_EBOOK)],
+        ['price', String(Math.max(0, Math.floor(data.priceSats))), 'SAT'],
+        ['a', data.coordinate],
+        ['k', String(data.contentKind)],
         ['status', data.status ?? 'active'],
       ];
       if (data.image) tags.push(['image', data.image]);

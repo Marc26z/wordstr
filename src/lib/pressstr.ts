@@ -57,20 +57,22 @@ export interface EbookData {
   priceSats?: number;
 }
 
-/** NIP-99 (kind 30402) listing data for a paid ebook. */
-export interface EbookListingData {
-  /** Same `d` tag as the ebook so the listing is addressable alongside it. */
+/** NIP-99 (kind 30402) listing data for any paid wordstr item. */
+export interface SaleListingData {
+  /** Listing `d` tag; use `saleListingD(kind, productD)` for new listings. */
   d: string;
   title: string;
   summary?: string;
   image?: string;
   priceSats: number;
   publishedAt?: number;
-  /** Addressable coordinate of the ebook, e.g. `33953:<pubkey>:<d>`. */
-  ebookCoord: string;
+  /** Addressable coordinate of the item, e.g. `33953:<pubkey>:<d>`. */
+  coordinate: string;
+  /** Kind of the item being sold, written to the listing's `k` tag. */
+  contentKind: number;
   topics: string[];
   content: string;
-  /** Use `sold` to deactivate a listing when an ebook becomes free. */
+  /** Use `sold` to deactivate a listing when an item becomes free. */
   status?: 'active' | 'sold';
 }
 

@@ -11,6 +11,7 @@ import { usePublishMagazine } from '@/hooks/usePublishMagazine';
 import { CoverImagePicker } from '@/components/CoverImagePicker';
 import { LoginArea } from '@/components/auth/LoginArea';
 import { KIND_MAGAZINE, slugify } from '@/lib/pressstr';
+import { saleListingD } from '@/lib/nip99';
 import { ArrowLeft, Loader2, Newspaper } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/useToast';
@@ -22,12 +23,13 @@ interface FormValues {
   language: string;
   url: string;
   content: string;
+  priceSats: string;
 }
 
 export function PublishMagazinePage() {
   const { user } = useCurrentUser();
   const navigate = useNavigate();
-  const { publishMagazine } = usePublishMagazine();
+  const { publishMagazine, publishSaleListing } = usePublishMagazine();
   const { toast } = useToast();
   const [logoUrl, setLogoUrl] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,6 +50,9 @@ export function PublishMagazinePage() {
     setIsSubmitting(true);
     try {
       const d = slugify(values.title) || `magazine-${Date.now()}`;
+      const priceSats = Math.max(0, Math.floor(Number(values.priceSats) || 0));
+      const publishedAt = Math.floor(Date.now() / 1000);
+      const topics = values.topics.split(',').map((t) => t.trim()).filter(Boolean);
       const event = await publishMagazine({
         d,
         title: values.title.trim(),
@@ -61,6 +66,30 @@ export function PublishMagazinePage() {
         url: values.url.trim() || undefined,
         content: values.content.trim(),
       });
+
+      if (priceSats > 0) {
+        try {
+          await publishSaleListing({
+            d: saleListingD(KIND_MAGAZINE, d),
+            title: values.title.trim(),
+            summary: values.summary.trim() || undefined,
+            image: logoUrl || undefined,
+            priceSats,
+            publishedAt,
+            coordinate: `${KIND_MAGAZINE}:${event.pubkey}:${d}`,
+            contentKind: KIND_MAGAZINE,
+            topics,
+            content: values.content.trim(),
+          });
+        } catch (listingError) {
+          console.error(listingError);
+          toast({
+            title: 'Sale listing not published',
+            description: 'The magazine was published, but its NIP-99 listing could not be saved. Edit the magazine to try again.',
+            variant: 'destructive',
+          });
+        }
+      }
 
       const naddr = nip19.naddrEncode({
         kind: KIND_MAGAZINE,
@@ -184,6 +213,22 @@ export function PublishMagazinePage() {
               placeholder="https://yourmagazine.com"
               {...register('url')}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="priceSats">Price in satoshis</Label>
+            <Input
+              id="priceSats"
+              type="number"
+              min={0}
+              step={1}
+              inputMode="numeric"
+              placeholder="0"
+              {...register('priceSats')}
+            />
+            <p className="text-xs text-muted-foreground">
+              Leave empty or 0 to keep the magazine free. A paid magazine unlocks its issue list after payment; visitors pay with Lightning without logging in.
+            </p>
           </div>
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>

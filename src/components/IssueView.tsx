@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { NostrEvent } from '@nostrify/nostrify';
 import { nip19 } from 'nostr-tools';
@@ -18,7 +19,10 @@ import { genUserName } from '@/lib/genUserName';
 import { ArrowLeft, ExternalLink, FileText, Newspaper, Calendar, MoreHorizontal, Pencil } from 'lucide-react';
 import { DownloadButton } from '@/components/DownloadButton';
 import { DeleteEventButton } from '@/components/DeleteEventButton';
+import { PurchaseCard } from '@/components/PurchaseCard';
 import { CommentsSection } from '@/components/comments/CommentsSection';
+import { useSaleListing } from '@/hooks/useSaleListing';
+import { parsePriceSats } from '@/lib/nip99';
 import { KIND_MAGAZINE, formatFileSize } from '@/lib/pressstr';
 
 function getTag(event: NostrEvent, name: string): string | undefined {
@@ -35,6 +39,8 @@ export function IssueView({ event, naddr }: IssueViewProps) {
   const { nostr } = useNostr();
   const { user } = useCurrentUser();
   const author = useAuthor(event.pubkey);
+  const { data: listing, isLoading: listingLoading } = useSaleListing(event);
+  const [isUnlocked, setIsUnlocked] = useState(false);
 
   const title = getTag(event, 'title') ?? 'Untitled Issue';
   const issue = getTag(event, 'issue') ?? '';
@@ -75,6 +81,10 @@ export function IssueView({ event, naddr }: IssueViewProps) {
   const isEpub = mimeType.includes('epub');
   const format = isEpub ? 'EPUB' : 'PDF';
   const isOwner = user?.pubkey === event.pubkey;
+  const priceSats = listing ? parsePriceSats(listing) : 0;
+  const isForSale = priceSats > 0;
+  const showPurchase = isForSale && !isOwner && Boolean(fileUrl);
+  const showDirectDownload = Boolean(fileUrl) && (isOwner || isUnlocked || (!listingLoading && !isForSale));
 
   const publishedDate = publishedAt
     ? new Date(Number(publishedAt) * 1000).toLocaleDateString(undefined, {
@@ -165,6 +175,9 @@ export function IssueView({ event, naddr }: IssueViewProps) {
                 </span>
               )}
               <Badge variant="outline" className="text-xs">{format}</Badge>
+              {isForSale && (
+                <Badge className="text-xs">{priceSats.toLocaleString()} sats</Badge>
+              )}
               {fileSize && (
                 <span className="flex items-center gap-1">
                   <FileText className="w-3.5 h-3.5" />
@@ -183,7 +196,19 @@ export function IssueView({ event, naddr }: IssueViewProps) {
 
             {summary && <p className="text-muted-foreground mb-4">{summary}</p>}
 
-            {fileUrl && (
+            {showPurchase && listing && (
+              <PurchaseCard
+                listing={listing}
+                sellerMetadataEvent={author.data?.event}
+                itemLabel="issue"
+                fileUrl={fileUrl}
+                filename={`${title}.${isEpub ? 'epub' : 'pdf'}`}
+                format={format}
+                onStatusChange={(status) => setIsUnlocked(status === 'paid')}
+              />
+            )}
+
+            {showDirectDownload && (
               <div className="flex flex-wrap gap-3">
                 <DownloadButton
                   url={fileUrl}

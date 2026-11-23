@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { NostrEvent } from '@nostrify/nostrify';
 import { nip19 } from 'nostr-tools';
@@ -13,9 +14,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { IssueCard } from '@/components/PublicationCard';
 import { DeleteEventButton } from '@/components/DeleteEventButton';
+import { PurchaseCard } from '@/components/PurchaseCard';
 import { useAuthor } from '@/hooks/useAuthor';
 import { useMagazineIssues } from '@/hooks/useMagazines';
+import { useSaleListing } from '@/hooks/useSaleListing';
 import { genUserName } from '@/lib/genUserName';
+import { parsePriceSats } from '@/lib/nip99';
 import { ArrowLeft, Globe, Newspaper, Plus, ExternalLink, MoreHorizontal, Pencil } from 'lucide-react';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { KIND_MAGAZINE } from '@/lib/pressstr';
@@ -32,6 +36,8 @@ interface MagazineViewProps {
 export function MagazineView({ event, naddr }: MagazineViewProps) {
   const { user } = useCurrentUser();
   const author = useAuthor(event.pubkey);
+  const { data: listing, isLoading: listingLoading } = useSaleListing(event);
+  const [isUnlocked, setIsUnlocked] = useState(false);
   const dTag = getTag(event, 'd') ?? '';
   const coord = `${KIND_MAGAZINE}:${event.pubkey}:${dTag}`;
   const { data: issues, isLoading: issuesLoading } = useMagazineIssues(coord);
@@ -48,6 +54,10 @@ export function MagazineView({ event, naddr }: MagazineViewProps) {
 
   const isOwner = user?.pubkey === event.pubkey;
   const issuePublishUrl = `/publish/issue?magazine=${encodeURIComponent(coord)}`;
+  const priceSats = listing ? parsePriceSats(listing) : 0;
+  const isForSale = priceSats > 0;
+  const showPurchase = isForSale && !isOwner;
+  const issuesLocked = !isOwner && (listingLoading || (isForSale && !isUnlocked));
 
   return (
     <div className="min-h-screen bg-background">
@@ -120,6 +130,19 @@ export function MagazineView({ event, naddr }: MagazineViewProps) {
                 ))}
               </div>
             )}
+            {isForSale && (
+              <Badge className="mt-3 text-xs">{priceSats.toLocaleString()} sats</Badge>
+            )}
+            {showPurchase && listing && (
+              <div className="mt-4">
+                <PurchaseCard
+                  listing={listing}
+                  sellerMetadataEvent={author.data?.event}
+                  itemLabel="magazine"
+                  onStatusChange={(status) => setIsUnlocked(status === 'paid')}
+                />
+              </div>
+            )}
           </div>
           {isOwner && (
             <div className="flex-shrink-0 flex gap-2">
@@ -157,7 +180,14 @@ export function MagazineView({ event, naddr }: MagazineViewProps) {
             )}
           </h2>
 
-          {issuesLoading ? (
+          {issuesLocked ? (
+            <div className="border-2 border-dashed rounded-xl p-12 text-center">
+              <Newspaper className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+              <p className="text-muted-foreground text-sm">
+                Complete the payment above to unlock this magazine's issues.
+              </p>
+            </div>
+          ) : issuesLoading ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="space-y-2">
