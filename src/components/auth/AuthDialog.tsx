@@ -11,6 +11,7 @@ import {
   ChevronUp,
   Loader2,
   ExternalLink,
+  Puzzle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,6 +34,7 @@ import {
 import { useNostrPublish } from '@/hooks/useNostrPublish';
 import { useUploadFile } from '@/hooks/useUploadFile';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useNostrExtension } from '@/hooks/useNostrExtension';
 import { generateSecretKey, getPublicKey, nip19 } from 'nostr-tools';
 
 interface AuthDialogProps {
@@ -109,7 +111,7 @@ const AuthDialog: React.FC<AuthDialogProps> = ({ isOpen, onClose }) => {
   const abortControllerRef = useRef<AbortController | null>(null);
   const isMobile = useIsMobile();
 
-  const hasExtension = typeof window !== 'undefined' && 'nostr' in window;
+  const { available: hasExtension, refresh: refreshExtension } = useNostrExtension();
 
   // Reset state when the dialog closes.
   // This is the "reset state when a prop changes" pattern; the usual
@@ -297,12 +299,19 @@ const AuthDialog: React.FC<AuthDialogProps> = ({ isOpen, onClose }) => {
   };
 
   const handleExtensionLogin = async () => {
-    if (!hasExtension) return;
+    if (!hasExtension) {
+      refreshExtension();
+      setLoginError('No NIP-07 extension detected. Install Alby, nos2x, or Flamingo, then reload this page.');
+      setIsLoggingIn(false);
+      return;
+    }
     setIsLoggingIn(true);
+    setLoginError('');
     try {
       await login.extension();
       onClose();
     } catch (e) {
+      refreshExtension();
       setLoginError(e instanceof Error ? e.message : 'Extension login failed.');
       setIsLoggingIn(false);
     }
@@ -390,7 +399,29 @@ const AuthDialog: React.FC<AuthDialogProps> = ({ isOpen, onClose }) => {
               </p>
 
               <div className="space-y-2">
-                <Button onClick={() => setStep('generate')} className="w-full h-12">
+                {hasExtension ? (
+                  <Button
+                    onClick={handleExtensionLogin}
+                    disabled={isLoggingIn}
+                    className="w-full h-12"
+                  >
+                    <Puzzle className="w-4 h-4 mr-2" />
+                    {isLoggingIn ? 'Logging in…' : 'Sign in with browser extension'}
+                  </Button>
+                ) : (
+                  <div className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">
+                    Using a NIP-07 browser extension? Install{' '}
+                    <a href="https://getalby.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">Alby</a>,{' '}
+                    <a href="https://github.com/nostr-security/nos2x" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">nos2x</a>, or{' '}
+                    <a href="https://flamingo.app/" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">Flamingo</a>, then reload this page.
+                  </div>
+                )}
+
+                <Button
+                  variant={hasExtension ? 'outline' : 'default'}
+                  onClick={() => setStep('generate')}
+                  className="w-full h-12"
+                >
                   Create new account
                 </Button>
                 <Button
@@ -401,6 +432,10 @@ const AuthDialog: React.FC<AuthDialogProps> = ({ isOpen, onClose }) => {
                   I already have an account
                 </Button>
               </div>
+
+              {loginError && step === 'welcome' && (
+                <p className="text-sm text-destructive">{loginError}</p>
+              )}
             </div>
           )}
 
@@ -598,7 +633,8 @@ const AuthDialog: React.FC<AuthDialogProps> = ({ isOpen, onClose }) => {
                     disabled={isLoggingIn}
                     className="w-full h-12"
                   >
-                    {isLoggingIn ? 'Logging in…' : 'Log in with extension'}
+                    <Puzzle className="w-4 h-4 mr-2" />
+                    {isLoggingIn ? 'Logging in…' : 'Sign in with browser extension'}
                   </Button>
 
                   <Button
@@ -634,6 +670,13 @@ const AuthDialog: React.FC<AuthDialogProps> = ({ isOpen, onClose }) => {
                 </>
               ) : (
                 <>
+                  <p className="text-xs text-muted-foreground text-center">
+                    No NIP-07 extension detected. Install{' '}
+                    <a href="https://getalby.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">Alby</a>{' '}
+                    or{' '}
+                    <a href="https://github.com/nostr-security/nos2x" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">nos2x</a>{' '}
+                    and reload to sign in with it.
+                  </p>
                   <NsecLoginForm
                     loginNsec={loginNsec}
                     setLoginNsec={setLoginNsec}

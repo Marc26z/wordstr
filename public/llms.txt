@@ -61,6 +61,7 @@ The EPUB stays on public Blossom mirrors, so a skilled user could discover the U
 - `src/components/EbookPurchase.tsx` — Paid ebook UI: price, QR invoice, `lightning:` wallet link, copy invoice, payment status, and automatic download on receipt.
 - `src/components/comments/CommentsSection.tsx` — NIP-22 threaded comment renderer.
 - `src/hooks/useBlogs.ts` — TanStack Query hooks: `useBlogs` (global feed), `useAuthorBlogs` (by pubkey), `useBlogPost` (single by pubkey+d). Exports `KIND_BLOG_POST = 30023`.
+- `src/hooks/useNostrExtension.ts` — Detects a NIP-07 signer (`window.nostr.getPublicKey` + `signEvent`), re-checking after mount and on window focus so late-injecting extensions are found. Powers the first-class “Sign in with browser extension” button in `AuthDialog`.
 - `src/components/BlogPostView.tsx` — Blog post detail: theme-aware Markdown renderer, promo video, "Zap the author" card, "Listen in Boris" deep link (read.withboris.com/a/<naddr> with relay hints, for Boris's TTS reader), author card, NIP-22 comments.
 - `src/components/PromoVideo.tsx` — Resolves Divine video links (kind 34236) and plays them inline.
 - `src/components/ZapDialog.tsx` / `ZapButton.tsx` / `WalletModal.tsx` — NIP-57 zap UI: amount presets, comment, invoice QR fallback, and NWC wallet management.
@@ -145,7 +146,7 @@ Users log in with a Nostr identity. Supported signer types:
 - nsec (secret key, stored in localStorage — plaintext; use with care)
 - NIP-46 remote signer (bunker://)
 
-The `LoginArea` component handles all login flows via `@nostrify/react/login`.
+The `LoginArea` component handles all login flows via `@nostrify/react/login`. NIP-07 is a first-class option on the first screen of `AuthDialog` when a signer is detected; nsec and NIP-46 remain available under “I already have an account”.
 
 ## Security Notes
 
@@ -165,7 +166,7 @@ The `LoginArea` component handles all login flows via `@nostrify/react/login`.
 
 See `/changelog` in the app or `src/pages/ChangelogPage.tsx` in the source for the full release history.
 
-Current version: **1.14.0**
+Current version: **1.15.0**
 
 ## Links
 

@@ -14,6 +14,16 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: '1.15.0',
+    date: '2026-11-22',
+    tag: 'feat',
+    title: 'One-click NIP-07 extension sign-in',
+    items: [
+      'Added a prominent “Sign in with browser extension” button on the first screen of the login dialog.',
+      'Improved NIP-07 detection, re-checking after load and window focus, with clear guidance and installation links when no extension is found.',
+    ],
+  },
+  {
     version: '1.14.0',
     date: '2026-11-22',
     tag: 'feat',
