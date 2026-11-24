@@ -14,6 +14,17 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: '1.16.2',
+    date: '2026-11-24',
+    tag: 'fix',
+    title: 'The complete article archive stays visible after sign-in',
+    items: [
+      'Fixed the homepage reverting to only a couple of articles when NostrSync replaced the built-in relays with the owner\'s single-relay NIP-65 list.',
+      'Owner feeds now always include wordstr\'s built-in archive relays in addition to the owner\'s write relays and the signed-in user\'s configured relays.',
+      'Centralized the default relay list so the app connection pool and archive fallback cannot drift apart.',
+    ],
+  },
+  {
     version: '1.16.1',
     date: '2026-11-22',
     tag: 'fix',

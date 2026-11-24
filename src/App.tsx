@@ -14,6 +14,7 @@ import { AppProvider } from '@/components/AppProvider';
 import { AppConfig } from '@/contexts/AppContext';
 import { NWCProvider } from '@/contexts/NWCContext';
 import AppRouter from './AppRouter';
+import { DEFAULT_RELAY_URLS } from '@/lib/defaultRelays';
 
 const head = createHead({
   plugins: [
@@ -34,24 +35,7 @@ const queryClient = new QueryClient({
 const defaultConfig: AppConfig = {
   theme: "dark",
   relayMetadata: {
-    relays: [
-      // Major general-purpose relays
-      { url: 'wss://relay.damus.io', read: true, write: true },
-      { url: 'wss://relay.primal.net', read: true, write: true },
-      { url: 'wss://relay.ditto.pub', read: true, write: true },
-      { url: 'wss://nos.lol', read: true, write: true },
-      { url: 'wss://nostr.wine', read: true, write: true },
-      { url: 'wss://relay.snort.social', read: true, write: true },
-      // Long-form / article-friendly relays
-      { url: 'wss://relay.nostr.hu', read: true, write: true },
-      { url: 'wss://nostr.mom', read: true, write: true },
-      { url: 'wss://relay.orangepill.dev', read: true, write: true },
-      { url: 'wss://offchain.pub', read: true, write: true },
-      // Well-known stable relays
-      { url: 'wss://nostr.fmt.wiz.biz', read: true, write: true },
-      { url: 'wss://eden.nostr.land', read: true, write: true },
-      { url: 'wss://relay.current.fyi', read: true, write: true },
-    ],
+    relays: DEFAULT_RELAY_URLS.map((url) => ({ url, read: true, write: true })),
     updatedAt: 0,
   },
 };

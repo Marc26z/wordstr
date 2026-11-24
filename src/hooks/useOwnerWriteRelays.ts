@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAppContext } from '@/hooks/useAppContext';
 import { SITE_OWNER_PUBKEY } from '@/lib/siteOwner';
 import { queryRelaysMerged } from '@/lib/queryRelays';
+import { DEFAULT_RELAY_URLS } from '@/lib/defaultRelays';
 
 /**
  * Well-known relay-list aggregators, used to discover the site owner's
@@ -21,11 +22,12 @@ function normalizeRelayUrl(url: string): string {
  * Returns the union of:
  *  1. the owner's NIP-65 (kind 10002) *write* relays — where their posts
  *     actually live, per the outbox model, and
- *  2. the app's configured read relays (as a fallback).
+ *  2. the app's configured read relays, and
+ *  3. wordstr's built-in archive relays (as a permanent fallback).
  *
- * Querying this set makes the homepage feeds complete and consistent,
- * regardless of which default relay happens to answer, or whether
- * NostrSync has swapped the pool for the logged-in user's relay list.
+ * The built-in set is essential: NostrSync replaces the configured relays
+ * with the logged-in user's NIP-65 list. Without it, an owner whose list only
+ * contains a relay holding two recent posts would still see an incomplete feed.
  */
 export function useOwnerWriteRelays(enabled = true) {
   const { nostr } = useNostr();
@@ -45,7 +47,7 @@ export function useOwnerWriteRelays(enabled = true) {
       try {
         const relayLists = await queryRelaysMerged(
           nostr,
-          [...new Set([...defaultUrls, ...RELAY_DISCOVERY_URLS])],
+          [...new Set([...defaultUrls, ...DEFAULT_RELAY_URLS, ...RELAY_DISCOVERY_URLS])],
           [{ kinds: [10002], authors: [SITE_OWNER_PUBKEY] }],
           { signal: c.signal, timeoutMs: 5000 },
         );
@@ -57,10 +59,10 @@ export function useOwnerWriteRelays(enabled = true) {
           .map(([, url]) => normalizeRelayUrl(url))
           .filter(Boolean);
       } catch {
-        // Discovery failed — fall back to the app's default relays only.
+        // Discovery failed — configured and built-in archive relays still apply.
       }
 
-      return [...new Set([...writeUrls, ...defaultUrls])];
+      return [...new Set([...writeUrls, ...defaultUrls, ...DEFAULT_RELAY_URLS])];
     },
   });
 }
